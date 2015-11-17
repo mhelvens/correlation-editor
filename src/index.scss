@@ -1,0 +1,116 @@
+////////////////////////////////////////////////////////////////////////////////
+
+@import "../node_modules/bootstrap-sass/assets/stylesheets/bootstrap/mixins";
+@import "../node_modules/bootstrap-sass/assets/stylesheets/bootstrap/variables";
+@import "../node_modules/bootstrap-sass/assets/stylesheets/bootstrap/labels";
+
+////////////////////////////////////////////////////////////////////////////////
+
+.icon-pubmed      { background-image: url(./img/pubmed.png)      !important }
+.icon-doctors     { background-image: url(./img/doctors.png)     !important }
+.icon-thermometer { background-image: url(./img/thermometer.png) !important }
+.icon-artery      { background-image: url(./img/artery.png)      !important }
+.icon-atom        { background-image: url(./img/atom.png)        !important }
+.icon-grouping    { background-image: url(./img/grouping.png)    !important }
+
+////////////////////////////////////////////////////////////////////////////////
+
+/* golden-layout content panels */
+.lm_content {
+  overflow-y:       scroll;
+  background-color: white;
+}
+
+/* make splitter handles smaller so as not to interfere with adjacent scroll-bars */
+.lm_splitter.lm_horizontal .lm_drag_handle { width:  8px !important; left: -3px !important; }
+.lm_splitter.lm_vertical   .lm_drag_handle { height: 8px !important; top:  -3px !important; }
+
+/* allow an element inside an .lm_content with overflow-y:scroll to have a position:absolute */
+.lm_item_container {
+  position: relative;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+.resource-view {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+}
+
+.resource-view > div.icon {
+  background:      no-repeat center;
+  background-size: contain;
+  min-width:       3em;
+  min-height:      3em;
+  max-width:       3em;
+  max-height:      3em;
+}
+
+.resource-view > div.text-content {
+  display:    block;
+  margin:     0 0.8em;
+  text-align: center;
+}
+
+.resource-view > a.link {
+  align-self: flex-start;
+  min-width:  1em;
+}
+
+.resource-view > div.icon         { flex-grow: 0 }
+.resource-view > div.text-content { flex-grow: 1 }
+.resource-view > a.link           { flex-grow: 0 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+span.icon {
+  display:         inline-block;
+  background:      no-repeat center;
+  background-size: contain;
+  vertical-align:  baseline !important;
+  min-width:       1.8em;
+  min-height:      1.8em;
+  max-width:       1.8em;
+  max-height:      1.8em;
+  margin:         -0.4em;
+}
+
+span.icon-in-button {
+  min-width:   1.6em;
+  min-height:  1.6em;
+  max-width:   1.6em;
+  max-height:  1.6em;
+  margin-top:    0;
+  margin-bottom: 0;
+}
+
+span.icon-small {
+  min-width:       1.2em;
+  min-height:      1.2em;
+  max-width:       1.2em;
+  max-height:      1.2em;
+  margin:         -0.1em;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+.resource-badge {
+  @extend         .label;
+  display:        inline-block   !important;
+  color:          black          !important;
+  border:         solid 1px #777 !important;
+  vertical-align: middle         !important;
+  padding:        2px            !important;
+  white-space:    nowrap;
+  overflow:       hidden;
+  text-overflow:  ellipsis;
+  cursor:         pointer;
+  max-width:      100%;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+
+////////////////////////////////////////////////////////////////////////////////

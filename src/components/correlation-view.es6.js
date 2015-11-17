@@ -1,0 +1,152 @@
+import ng      from 'angular2/angular2';
+import request from '../libs/superagent.es6.js';
+
+import {getResource_sync}       from '../util/resources.es6.js';
+import {PublicationBadge}       from './publication-badge.es6.js';
+import {ClinicalIndexBadge}     from './clinical-index-badge.es6.js';
+import {LocatedMeasureBadge}    from './located-measure-badge.es6.js';
+import {UnderlineSubstringPipe} from '../util/underline-substring-pipe.es6.js';
+import {EscapeHtmlPipe}         from '../util/escape-html-pipe.es6.js';
+import {
+	resourceDropAreaHostAttributes,
+	ResourceDropArea
+} from '../util/resource-drop-area.es6.js';
+import {
+	draggableResourceHostAttributes,
+	DraggableResource
+} from '../util/draggable-resource.es6.js';
+
+export const CorrelationView = ng.Component({
+	selector: '[correlation]',
+	events: ['select', 'dragging'],
+	inputs: [
+		'model: correlation',
+		'highlight'
+	],
+	host: {
+		'[class.panel]':         ' true     ',
+		'[class.panel-default]': ' true     ',
+		'[class.hovering]':      ' hovering ',
+		'[style.display]':       ' "block"  ',
+		...resourceDropAreaHostAttributes,
+		...draggableResourceHostAttributes
+	},
+	directives: [
+		PublicationBadge,
+		ClinicalIndexBadge,
+		LocatedMeasureBadge
+	],
+	pipes: [
+		UnderlineSubstringPipe,
+		EscapeHtmlPipe
+	],
+	styles: [`
+
+		.panel-heading            { border: solid 1px #444;                   }
+		.panel-heading.no-comment { border-bottom-style: none;                }
+		.panel-footer             { border: solid 1px #444;                   }
+		.panel-footer.no-comment  { border-top-style: none; margin-top: -5px; }
+
+		.panel-heading {
+			padding: 10px !important;
+			cursor: pointer;
+		}
+
+		.panel-heading.no-comment a {
+			cursor: default;
+		}
+
+		.panel-heading a .comment-indicator {
+		    color: grey;
+		}
+
+		.panel-heading a .comment-indicator .glyphicon {
+		    margin-left: 3px
+		}
+
+		.panel-heading a.collapsed       .glyphicon-chevron-down  { display: none }
+		.panel-heading a:not(.collapsed) .glyphicon-chevron-right { display: none }
+
+		.resource-badge {
+			margin: 0 5px 5px 0;
+		}
+		.panel-footer {
+			padding: 10px 10px 5px 10px !important;
+		}
+
+		:host          .panel-heading, :host          .panel-footer { background-color: #eee !important }
+		:host.hovering .panel-heading, :host.hovering .panel-footer { background-color: #ddd !important }
+
+	`],
+	template: `
+
+		<div class="panel-heading" [class.no-comment]="!model.comment">
+			<h4 class="panel-title" style="font-weight: bold; display: flex; align-content: center; align-items: center;">
+				<div (click)="select.next(model)" (mouseover)="hovering = true" (mouseout)="hovering = false" style="flex-grow: 1">
+					<span class="icon icon-grouping" style="margin-right: 0"></span>&nbsp;
+					Correlation
+				</div>
+				<a data-toggle="collapse" href="#collapse-{{ model.id }}" class="collapsed" style="display: block; text-decoration: none; cursor: pointer; flex-grow: 0">
+					<span *ng-if="model.comment" class="comment-indicator">
+						comment
+						<span class="glyphicon glyphicon-chevron-right"></span>
+						<span class="glyphicon glyphicon-chevron-down"></span>
+					</span>
+				</a>
+			</h4>
+		</div>
+		<div *ng-if="model.comment" id="collapse-{{ model.id }}" class="panel-collapse collapse">
+			<div class="panel-body" [inner-html]="model.comment | escapeHTML | underlineSubstring:highlight"></div>
+		</div>
+		<div class="panel-footer" [class.no-comment]="!model.comment">
+			   <publication-badge                                          [model]="publicationModel" [highlight]="highlight" (select)="select.next($event)"></publication-badge><!--
+			--><clinical-index-badge  *ng-for="#m of clinicalIndexModels"  [model]="m"                [highlight]="highlight" (select)="select.next($event)"></clinical-index-badge><!--
+			--><located-measure-badge *ng-for="#m of locatedMeasureModels" [model]="m"                [highlight]="highlight" (select)="select.next($event)"></located-measure-badge>
+		</div>
+
+	`
+}).Class({
+
+	constructor() {
+		this.select   = new ng.EventEmitter();
+		this.dragging = new ng.EventEmitter();
+		this.hovering = false;
+	},
+
+	onInit() {
+		this.publicationModel     = getResource_sync('publications',    this.model.publication    );
+		this.clinicalIndexModels  = getResource_sync('clinicalIndices', this.model.clinicalIndices);
+		this.locatedMeasureModels = getResource_sync('locatedMeasures', this.model.locatedMeasures);
+	},
+
+	...DraggableResource('correlation', 'model', {
+		dragstart() {
+			this.dragging.next(this.model);
+		},
+		dragend() {
+			this.dragging.next(null);
+		}
+	}),
+
+	...ResourceDropArea('publication', 'clinicalindex', 'locatedmeasure'),
+	async resourceDrop({type, id}) {
+		switch (type) {
+			case 'Publication': {
+				await request.post(`/correlations/${this.model.id}`).send({ publication: id });
+				this.model.publication = id;
+				this.publicationModel = getResource_sync('publications', id);
+			} break;
+			case 'ClinicalIndex': {
+				await request.put(`/correlations/${this.model.id}/clinicalIndices/${id}`);
+				this.model.clinicalIndices = [...new Set([...this.model.clinicalIndices, id])];
+				this.clinicalIndexModels = getResource_sync('clinicalIndices', this.model.clinicalIndices);
+			} break;
+			case 'LocatedMeasure': {
+				await request.put(`/correlations/${this.model.id}/locatedMeasures/${id}`);
+				this.model.locatedMeasures = [...new Set([...this.model.locatedMeasures, id])];
+				this.locatedMeasureModels = getResource_sync('locatedMeasures', this.model.locatedMeasures);
+			} break;
+		}
+	}
+
+});
