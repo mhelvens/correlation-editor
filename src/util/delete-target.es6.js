@@ -1,11 +1,12 @@
-import ng            from 'angular2/angular2';
+import ng from 'angular2/angular2';
+import $  from 'jquery';
 
 import {resourceDropAreaHostAttributes, ResourceDropArea} from './resource-drop-area.es6.js';
 
 export const DeleteTarget = ng.Component({
 	selector: 'delete-target',
 	inputs:   ['show'],
-	events: ['catch'],
+	events:   ['catch'],
 	host: {
 		'[class.highlight]' : ` draggingOver  `,
 		'[class.expanded]'  : ` show          `,
@@ -24,9 +25,6 @@ export const DeleteTarget = ng.Component({
 			padding: 0;
 			margin: 0;
 			position: absolute;
-			left: 2px;
-			top: -1px;
-			z-index: 10;
 			font-weight: bold;
 			border-bottom-left-radius:  6px;
 			border-bottom-right-radius: 6px;
@@ -37,30 +35,34 @@ export const DeleteTarget = ng.Component({
 			border-style: none solid solid solid;
 			overflow: hidden;
 			text-align: center;
+			visibility: hidden;
 			transition: height 0.4s;
 		}
 
-		:host:not(.expanded) { height:  1px !important }
-		:host.expanded       { height: 36px !important }
+		:host:not(.expanded) { height:  1px }
+		:host.expanded       { height: 34px }
 
 		:host.expanded.highlight {
 			background-color: #f88;
 			border-color:     #900;
-			color: #700;
+			color:            #700;
 			opacity:          0.8;
 		}
 
 	`]
 }).Class({
 
-	constructor: function () {
+	constructor: [ng.ElementRef, function ({nativeElement}) {
 		this.catch = new ng.EventEmitter();
+		this.nativeElement = $(nativeElement);
 
 		this.show          = false;
 		this.draggingOver  = false;
-	},
 
-	...ResourceDropArea('publication', 'clinicalindex', 'locatedmeasure', 'lyphtemplate', 'correlation'),
+		this._hideCb = () => { this.nativeElement.css('visibility', 'hidden') };
+	}],
+
+	...ResourceDropArea(['publication', 'clinicalindex', 'locatedmeasure', 'lyphtemplate', 'correlation']),
 
 	resourceDragEnter(resource) {
 		this.draggingOver = true;
@@ -72,6 +74,18 @@ export const DeleteTarget = ng.Component({
 
 	resourceDrop(resource) {
 		this.catch.next(resource);
+		this.draggingOver = false;
+	},
+
+	onChanges({show}) {
+		if (show) {
+			if (show.currentValue) {
+				this.nativeElement.css('visibility', 'visible');
+				this.nativeElement.off('transitionend', this._hideCb);
+			} else {
+				this.nativeElement.one('transitionend', this._hideCb);
+			}
+		}
 	}
 
 });

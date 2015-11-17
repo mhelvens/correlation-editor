@@ -2,21 +2,27 @@ import ng from 'angular2/angular2';
 import $  from 'jquery';
 import scrollbarSize from 'scrollbar-size';
 
-import {getAllResources_sync, getResource_sync} from '../util/resources.es6.js';
+import {CorrelationView} from './correlation-view.es6.js';
 
-import {CorrelationView}    from './correlation-view.es6.js';
-import {FieldSubstringPipe} from '../util/substring-pipe.es6.js';
+import {getAllResources_sync, getResource_sync} from '../util/resources.es6.js';
+import {DeleteTarget}                           from '../util/delete-target.es6.js';
+import {FieldSubstringPipe}                     from '../util/substring-pipe.es6.js';
 
 export const CorrelationList = ng.Component({
 	selector: 'correlation-list',
 	events: ['select']
 }).View({ directives: [
 	ng.NgFor,
-	CorrelationView
+	CorrelationView,
+	DeleteTarget
 ], pipes: [
 	FieldSubstringPipe
 ], template: `
 
+	<delete-target (catch)       = " deleteResource($event)                 "
+	               [show]        = " showTrashcan                           "
+	               [style.width] = " 'calc(100% - '+(scrollbarSize+2)+'px)' "
+	               style         = " z-index: 10; left: 2px;                "></delete-target>
     <div class="input-group"
          style        = "position: absolute; left: 1px; top: 1px;"
         [style.width] = "'calc(100% - '+(scrollbarSize-1)+'px)'">
@@ -57,7 +63,8 @@ export const CorrelationList = ng.Component({
 		     [correlation]            = "model"
 		     [highlight]              = "filter"
 		     [style.margin-bottom.px] = "14"
-		     (select)                 = "select.next($event)">
+		     (select)                 = "select.next($event)"
+		     (dragging)               = "showTrashcan = !!$event">
         </div>
 	</div>
 
@@ -81,6 +88,7 @@ export const CorrelationList = ng.Component({
 		}
 		this.select = new ng.EventEmitter();
 		this.scrollbarSize = scrollbarSize();
+		this.showTrashcan = false;
 	}],
 
 	hasFilters() {
@@ -88,6 +96,10 @@ export const CorrelationList = ng.Component({
 		       this.filterFlags.byClinicalIndices ||
 		       this.filterFlags.byLocatedMeasures ||
 		       this.filterFlags.byComment;
+	},
+
+	deleteResource(resource) {
+		console.log('TODO: delete', resource);
 	},
 
 	filterText(model, flags) {

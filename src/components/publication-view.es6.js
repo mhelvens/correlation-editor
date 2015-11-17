@@ -1,12 +1,8 @@
 import ng from 'angular2/angular2';
 
-import {UnderlineSubstringPipe} from '../util/underline-substring-pipe.es6.js';
-import {EscapeHtmlPipe}         from '../util/escape-html-pipe.es6.js';
-import {
-	draggableResourceHostAttributes,
-	DraggableResource
-} from '../util/draggable-resource.es6.js';
-
+import {UnderlineSubstringPipe}                             from '../util/underline-substring-pipe.es6.js';
+import {EscapeHtmlPipe}                                     from '../util/escape-html-pipe.es6.js';
+import {draggableResourceHostAttributes, DraggableResource} from '../util/draggable-resource.es6.js';
 
 export const PublicationView = ng.Component({
 	selector: '[publication]',
@@ -38,9 +34,8 @@ export const PublicationView = ng.Component({
 		:host       { background-color: #eff !important }
 		:host:hover { background-color: #cff !important }
 
-		div.resource-view > div.text-content {
+		:host .text-content {
 			font-style: italic;
-			overflow: hidden;
 		}
 
 	`]
@@ -52,12 +47,8 @@ export const PublicationView = ng.Component({
 	},
 
 	...DraggableResource('publication', 'model', {
-		dragstart() {
-			this.dragging.next(this.model);
-		},
-		dragend() {
-			this.dragging.next(null);
-		}
+		dragstart() { this.dragging.next(this.model) },
+		dragend()   { this.dragging.next(null)       }
 	}),
 
 	uriIsUrl() { return /^https?\:\/\//.test(this.model.uri) }

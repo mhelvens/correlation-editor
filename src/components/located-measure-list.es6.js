@@ -2,21 +2,27 @@ import ng      from 'angular2/angular2';
 import $       from 'jquery';
 import scrollbarSize from 'scrollbar-size';
 
-import {getAllResources_sync, getResource_sync} from '../util/resources.es6.js';
-
 import {LocatedMeasureView} from './located-measure-view.es6.js';
-import {FieldSubstringPipe} from '../util/substring-pipe.es6.js';
+
+import {getAllResources_sync, getResource_sync} from '../util/resources.es6.js';
+import {DeleteTarget}                           from '../util/delete-target.es6.js';
+import {FieldSubstringPipe}                     from '../util/substring-pipe.es6.js';
 
 export const LocatedMeasureList = ng.Component({
 	selector: 'located-measure-list',
 	events: ['select']
 }).View({directives: [
 	ng.NgFor,
-	LocatedMeasureView
+	LocatedMeasureView,
+	DeleteTarget
 ], pipes: [
 	FieldSubstringPipe
 ], template: `
 
+	<delete-target (catch)       = " deleteResource($event)                 "
+	               [show]        = " showTrashcan                           "
+	               [style.width] = " 'calc(100% - '+(scrollbarSize+2)+'px)' "
+	               style         = " z-index: 10; left: 2px;                "></delete-target>
 	<div class="list-group" style="margin: 0">
         <div  class        = "input-group"
               style        = "padding: 0; position: absolute; left: 1px"
@@ -45,7 +51,8 @@ export const LocatedMeasureList = ng.Component({
 		         style            = "padding: 10px"
 		        [located-measure] = "model"
 		        [highlight]       = "filter"
-		        (select)          = "select.next($event)">
+		        (select)          = "select.next($event)"
+		        (dragging)        = "showTrashcan = !!$event">
         </button>
 	</div>
 
@@ -64,7 +71,12 @@ export const LocatedMeasureList = ng.Component({
 		});
 		this.select = new ng.EventEmitter();
 		this.scrollbarSize = scrollbarSize();
+		this.showTrashcan = false;
 	}],
+
+	deleteResource(resource) {
+		console.log('TODO: delete', resource);
+	},
 
 	filterText(model, flags) {
 		return [

@@ -12,7 +12,7 @@ import {
 export const ClinicalIndexView = ng.Component({
 	selector: '[clinical-index]',
 	inputs:   ['model: clinicalIndex', 'highlight'],
-	events: ['select'],
+	events: ['select', 'dragging'],
 	host: {
 		'[style.borderColor]':     ` "#999"                   `,
 		'[title]':                 ` model.title || model.uri `,
@@ -46,10 +46,14 @@ export const ClinicalIndexView = ng.Component({
 }).Class({
 
 	constructor() {
-		this.select = new ng.EventEmitter();
+		this.select   = new ng.EventEmitter();
+		this.dragging = new ng.EventEmitter();
 	},
 
-	...DraggableResource('clinicalindex', 'model'),
+	...DraggableResource('clinicalindex', 'model', {
+		dragstart() { this.dragging.next(this.model) },
+		dragend()   { this.dragging.next(null) }
+	}),
 
 	uriIsUrl() { return /^https?:\/\//.test(this.model.uri) }
 

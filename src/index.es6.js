@@ -14,6 +14,7 @@ import {LocatedMeasureList}  from './components/located-measure-list.es6.js';
 import {LyphTemplateList}    from './components/lyph-template-list.es6.js';
 import {CorrelationList}     from './components/correlation-list.es6.js';
 import {ResourceEditor}      from './util/resource-editor.es6.js';
+import {DragDropService}     from './util/drag-drop-service.es6.js';
 
 import './index.scss';
 
@@ -22,130 +23,196 @@ import './index.scss';
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-	/* golden layout setup */
-	let layout = new GoldenLayout({
-		settings: { hasHeaders: false },
-		dimensions: {
-			minItemWidth:  200,
-			minItemHeight: 200,
-		},
+
+/* golden layout setup */
+let layout = new GoldenLayout({
+	settings: { hasHeaders: false },
+	dimensions: {
+		minItemWidth:  200,
+		minItemHeight: 200,
+	},
+	content: [{
+		type: 'row',
 		content: [{
-			type: 'row',
-			content: [
-				{
-					type:   'column',
-					width:   25,
-					content: [{
-						type:          'component',
-						componentName: 'topLeftPanel',
-						//title:         "Publications"
-					}, {
-						type:          'component',
-						componentName: 'bottomLeftPanel',
-						//title:         "Clinical Indices"
-					}]
-				}, {
-					type:   'column',
-					width:   50,
-					content: [{
-						type:          'component',
-						height:         85,
-						componentName: 'centerPanel',
-						//title:         "Correlations"
-					}, {
-						type:          'component',
-						height:         15,
-						componentName: 'bottomCenterPanel',
-						//title:         "Edit"
-					}]
-				}, {
-					type:   'column',
-					width:   25,
-					content: [{
-						type:          'component',
-						componentName: 'topRightPanel',
-						//title:         "Located Measures"
-					}, {
-						type:          'component',
-						componentName: 'bottomRightPanel',
-						//title:         "Lyph Templates"
-					}]
-				}
-			]
+			type:   'column',
+			width:   25,
+			content: [{
+				type:          'component',
+				componentName: 'topLeftPanel'
+			}, {
+				type:          'component',
+				componentName: 'bottomLeftPanel'
+			}]
+		}, {
+			type:   'column',
+			width:   50,
+			content: [{
+				type:          'component',
+				height:         85,
+				componentName: 'centerPanel'
+			}, {
+				type:          'component',
+				height:         15,
+				componentName: 'bottomCenterPanel'
+			}]
+		}, {
+			type:   'column',
+			width:   25,
+			content: [{
+				type:          'component',
+				componentName: 'topRightPanel'
+			}, {
+				type:          'component',
+				componentName: 'bottomRightPanel'
+			}]
 		}]
-	});
+	}]
+});
 
 
-	/* get the jQuery panel elements */
-	let [ topLeftPanel , bottomLeftPanel , centerPanel , bottomCenterPanel , topRightPanel , bottomRightPanel ] = await* layout.components
-	/**/('topLeftPanel','bottomLeftPanel','centerPanel','bottomCenterPanel','topRightPanel','bottomRightPanel');
+/* get the jQuery panel elements */
+let [ topLeftPanel , bottomLeftPanel , centerPanel , bottomCenterPanel , topRightPanel , bottomRightPanel ] = await* layout.components
+/**/('topLeftPanel','bottomLeftPanel','centerPanel','bottomCenterPanel','topRightPanel','bottomRightPanel');
 
 
-	/* add fade-out effect for center panel */
-	let fadeout = $(`<div style="
-		position:       absolute;
-	    bottom:         -1px;
-	    left:            1px;
-	    height:         60px;
-	    right:          ${scrollbarSize()-1}px;
-	    z-index:        9;
-	    pointer-events: none;
-	    background:     linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);">
-	`).appendTo(centerPanel.parent());
-	centerPanel.parent().css('overflow', 'hidden');
-	centerPanel.scroll(() => {
-		let gap = centerPanel[0].scrollHeight - centerPanel.scrollTop() - centerPanel.height();
-		fadeout.css('bottom', (gap > 60) ? -1 : gap-60);
-	});
+/* add fade-out effect for center panel */
+let fadeout = $(`<div style="
+	position:       absolute;
+    bottom:         -1px;
+    left:            1px;
+    height:         60px;
+    right:          ${scrollbarSize()-1}px;
+    z-index:        9;
+    pointer-events: none;
+    background:     linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);">
+`).appendTo(centerPanel.parent());
+centerPanel.parent().css('overflow', 'hidden');
+centerPanel.scroll(() => {
+	let gap = centerPanel[0].scrollHeight - centerPanel.scrollTop() - centerPanel.height();
+	fadeout.css('bottom', (gap > 60) ? -1 : gap-60);
+});
 
 
-	/* pre-load all resources */
-	await preloadAllResources();
+/* pre-load all resources */
+await preloadAllResources();
 
 
-	/* AngularJS 2 app component */
-	await new Promise((resolve, reject) => {
-		try {
-			let App = ng.Component({
-				selector: 'app'
-			}).View({directives: [
-				PublicationList,
-				ClinicalIndexList,
-				LocatedMeasureList,
-				LyphTemplateList,
-				CorrelationList,
-				ResourceEditor
-			], template: `
-				<publication-list     (select) = "selectedModel = $event"                        ></publication-list>
-				<clinical-index-list  (select) = "selectedModel = $event"                        ></clinical-index-list>
-				<located-measure-list (select) = "selectedModel = $event"                        ></located-measure-list>
-				<lyph-template-list   (select) = "selectedModel = $event"                        ></lyph-template-list>
-				<correlation-list     (select) = "selectedModel = $event"                        ></correlation-list>
-				<resource-editor      (cancel) = "selectedModel = null" [model] = "selectedModel"></resource-editor>
-			`}).Class({
-				constructor() {
-
-					this.selectedModel = null;
-
-				},
-				onInit: resolve
-			});
-			$('<app>').appendTo('body');
-			ng.bootstrap(App);
-		} catch (err) { reject(err) }
-	});
+/* determine injections */
+const injection = [DragDropService];
 
 
-	/* populating the panels */
-	$('publication-list')    .detach().appendTo(topLeftPanel     );
-	$('clinical-index-list') .detach().appendTo(bottomLeftPanel  );
-	$('located-measure-list').detach().appendTo(topRightPanel    );
-	$('lyph-template-list')  .detach().appendTo(bottomRightPanel );
-	$('correlation-list')    .detach().appendTo(centerPanel      );
-	$('resource-editor')     .detach().appendTo(bottomCenterPanel);
+/* AngularJS 2 app component */
+await new Promise((resolve, reject) => {
+	try {
+		let App = ng.Component({
+			selector: 'app'
+		}).View({directives: [
+			PublicationList,
+			ClinicalIndexList,
+			LocatedMeasureList,
+			LyphTemplateList,
+			CorrelationList,
+			ResourceEditor
+		], template: `
+			<publication-list     (select) = "selectedModel = $event"                        ></publication-list>
+			<clinical-index-list  (select) = "selectedModel = $event"                        ></clinical-index-list>
+			<located-measure-list (select) = "selectedModel = $event"                        ></located-measure-list>
+			<lyph-template-list   (select) = "selectedModel = $event"                        ></lyph-template-list>
+			<correlation-list     (select) = "selectedModel = $event"                        ></correlation-list>
+			<resource-editor      (cancel) = "selectedModel = null" [model] = "selectedModel"></resource-editor>
+		`}).Class({
+			constructor() {
+
+				this.selectedModel = null;
+
+			},
+			onInit: resolve
+		});
+		$('<app>').appendTo('body');
+		ng.bootstrap(App, injection);
+	} catch (err) { reject(err) }
+});
+
+
+/* populating the panels */
+$('publication-list')    .detach().appendTo(topLeftPanel     );
+$('clinical-index-list') .detach().appendTo(bottomLeftPanel  );
+$('located-measure-list').detach().appendTo(topRightPanel    );
+$('lyph-template-list')  .detach().appendTo(bottomRightPanel );
+$('correlation-list')    .detach().appendTo(centerPanel      );
+$('resource-editor')     .detach().appendTo(bottomCenterPanel);
 
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 } catch (err) { console.log('Error:', err) } })();
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//let Engine = ng.Class({
+//
+//	constructor() {},
+//
+//	start() {
+//		console.log('starting engine');
+//	}
+//
+//});
+//let OtherEngine = ng.Class({
+//
+//	constructor() {},
+//
+//	start() {
+//		console.log('starting OTHER engine');
+//	}
+//
+//});
+//let Doors = ng.Class({
+//
+//	constructor() {},
+//
+//	open() {
+//		console.log('opening doors');
+//	}
+//
+//});
+//let Car = ng.Class({
+//
+//	constructor: [Engine, Doors, function(engine, doors) {
+//		this.engine = engine;
+//		this.doors  = doors;
+//	}],
+//
+//	doStuff() {
+//		this.doors.open();
+//		this.engine.start();
+//	}
+//
+//});
+//let App = ng.Component({
+//	selector: 'app'
+//}).View({template: `
+//
+//	<div>Hello World!</div>
+//
+//	<div>
+//		{{ JSON.stringify({ foo: 'bar' }) }}
+//	</div>
+//
+//`}).Class({
+//	constructor: [Car, function(car) {
+//
+//		car.doStuff();
+//		car.foo = 'bar';
+//
+//	}]
+//});
+//$('body').empty().append('<app>');
+//ng.bootstrap(App, [Car, ng.provide(Engine, {useClass: OtherEngine}), Doors, ng.provide(JSON, {useValue: 'huh?'})]);
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

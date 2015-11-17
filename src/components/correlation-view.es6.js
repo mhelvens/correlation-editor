@@ -1,28 +1,20 @@
 import ng      from 'angular2/angular2';
 import request from '../libs/superagent.es6.js';
 
-import {getResource_sync}       from '../util/resources.es6.js';
+import {LocatedMeasureBadge}    from './located-measure-badge.es6.js';
 import {PublicationBadge}       from './publication-badge.es6.js';
 import {ClinicalIndexBadge}     from './clinical-index-badge.es6.js';
-import {LocatedMeasureBadge}    from './located-measure-badge.es6.js';
-import {UnderlineSubstringPipe} from '../util/underline-substring-pipe.es6.js';
-import {EscapeHtmlPipe}         from '../util/escape-html-pipe.es6.js';
-import {
-	resourceDropAreaHostAttributes,
-	ResourceDropArea
-} from '../util/resource-drop-area.es6.js';
-import {
-	draggableResourceHostAttributes,
-	DraggableResource
-} from '../util/draggable-resource.es6.js';
+
+import {getResource_sync}                                   from '../util/resources.es6.js';
+import {UnderlineSubstringPipe}                             from '../util/underline-substring-pipe.es6.js';
+import {EscapeHtmlPipe}                                     from '../util/escape-html-pipe.es6.js';
+import {resourceDropAreaHostAttributes, ResourceDropArea}   from '../util/resource-drop-area.es6.js';
+import {draggableResourceHostAttributes, DraggableResource} from '../util/draggable-resource.es6.js';
 
 export const CorrelationView = ng.Component({
 	selector: '[correlation]',
 	events: ['select', 'dragging'],
-	inputs: [
-		'model: correlation',
-		'highlight'
-	],
+	inputs: ['model: correlation', 'highlight'],
 	host: {
 		'[class.panel]':         ' true     ',
 		'[class.panel-default]': ' true     ',
@@ -99,9 +91,20 @@ export const CorrelationView = ng.Component({
 			<div class="panel-body" [inner-html]="model.comment | escapeHTML | underlineSubstring:highlight"></div>
 		</div>
 		<div class="panel-footer" [class.no-comment]="!model.comment">
-			   <publication-badge                                          [model]="publicationModel" [highlight]="highlight" (select)="select.next($event)"></publication-badge><!--
-			--><clinical-index-badge  *ng-for="#m of clinicalIndexModels"  [model]="m"                [highlight]="highlight" (select)="select.next($event)"></clinical-index-badge><!--
-			--><located-measure-badge *ng-for="#m of locatedMeasureModels" [model]="m"                [highlight]="highlight" (select)="select.next($event)"></located-measure-badge>
+			   <publication-badge [model]     = "publicationModel"
+			                      [highlight] = "highlight"
+			                      (select)    = "select.next($event)"
+				                  (dragging)  = "dragging.next($event)"></publication-badge><!--
+			--><clinical-index-badge *ng-for     = "#ciModel of clinicalIndexModels"
+			                         [model]     = "ciModel"
+			                         [highlight] = "highlight"
+			                         (select)    = "select.next($event)"
+				                     (dragging)  = "dragging.next($event)"></clinical-index-badge><!--
+			--><located-measure-badge *ng-for     = "#lmModel of locatedMeasureModels"
+			                          [model]     = "lmModel"
+			                          [highlight] = "highlight"
+			                          (select)    = "select.next($event)"
+				                      (dragging)  = "dragging.next($event)"></located-measure-badge>
 		</div>
 
 	`
@@ -128,7 +131,7 @@ export const CorrelationView = ng.Component({
 		}
 	}),
 
-	...ResourceDropArea('publication', 'clinicalindex', 'locatedmeasure'),
+	...ResourceDropArea(['publication', 'clinicalindex', 'locatedmeasure']),
 	async resourceDrop({type, id}) {
 		switch (type) {
 			case 'Publication': {

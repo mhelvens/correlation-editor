@@ -1,12 +1,11 @@
-import ng      from 'angular2/angular2';
-import $       from 'jquery';
+import ng            from 'angular2/angular2';
 import scrollbarSize from 'scrollbar-size';
 
 import {getAllResources_sync} from '../util/resources.es6.js';
+import {DeleteTarget}         from '../util/delete-target.es6.js';
+import {FieldSubstringPipe}   from '../util/substring-pipe.es6.js';
 
-import {DeleteTarget}       from '../util/delete-target.es6.js';
-import {PublicationView}    from './publication-view.es6.js';
-import {FieldSubstringPipe} from '../util/substring-pipe.es6.js';
+import {PublicationView} from './publication-view.es6.js';
 
 export const PublicationList = ng.Component({
 	selector: 'publication-list',
@@ -19,9 +18,10 @@ export const PublicationList = ng.Component({
 	FieldSubstringPipe
 ], template: `
 
-	<delete-target [style.width] = " 'calc(100% - '+(scrollbarSize+3)+'px)' "
+	<delete-target (catch)       = " deleteResource($event)                 "
 	               [show]        = " showTrashcan                           "
-	               (catch)       = " deleteResource($event)                 "></delete-target>
+	               [style.width] = " 'calc(100% - '+(scrollbarSize+2)+'px)' "
+	               style         = " z-index: 10; left: 2px;                "></delete-target>
 	<div class="list-group" style="margin: 0">
 		<div  class        = "form-group has-feedback"
               style        = "padding: 0; margin: 0; position: absolute; left: 1px; z-index: 9;"
@@ -54,16 +54,11 @@ export const PublicationList = ng.Component({
 		this.select = new ng.EventEmitter();
 		this.scrollbarSize = scrollbarSize();
 		this.showTrashcan = false;
-
-
 	},
 
 	deleteResource(resource) {
-		console.log(resource);
+		console.log('TODO: delete', resource);
 	},
-
-	//showTrashcan() { this.showingTrashcan = true  },
-	//hideTrashcan() { this.showingTrashcan = false },
 
 	filterText(model) { return model.title }
 

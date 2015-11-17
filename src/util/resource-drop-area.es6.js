@@ -5,52 +5,70 @@ export const resourceDropAreaHostAttributes = {
 	'(drop)':      ' drop     ($event) '
 };
 
-export const ResourceDropArea = (...types) => ({
+export const ResourceDropArea = (types, {dragenter, dragleave, dragover, drop} = {}) => ({
 
 	dragenter(event) {
-		for (let type of types) {
-			if (event.dataTransfer.types.includes(`x-resource/${type}`)) {
-				event.dataTransfer.dropEffect = 'link';
-				event.preventDefault();
-				if (typeof this.resourceDragEnter === 'function') {
-					this.resourceDragEnter(event.dataTransfer);
-					return;
-				}
+		let type;
+		for (let t of types) {
+			if (event.dataTransfer.types.includes(`x-resource/${t}`)) {
+				type = t;
+				break;
 			}
+		}
+		if (!type) { return }
+		event.dataTransfer.dropEffect = 'link';
+		event.preventDefault();
+		event.stopPropagation();
+		if (type && typeof this.resourceDragEnter === 'function') {
+			this.resourceDragEnter(event.dataTransfer);
 		}
 	},
 
 	dragleave(event) {
-		for (let type of types) {
-			if (event.dataTransfer.types.includes(`x-resource/${type}`)) {
-				event.dataTransfer.dropEffect = 'link';
-				event.preventDefault();
-				if (typeof this.resourceDragLeave === 'function') {
-					this.resourceDragLeave(event.dataTransfer);
-					return;
-				}
+		let type;
+		for (let t of types) {
+			if (event.dataTransfer.types.includes(`x-resource/${t}`)) {
+				type = t;
+				break;
 			}
+		}
+		if (!type) { return }
+		event.preventDefault();
+		event.stopPropagation();
+		if (type && typeof this.resourceDragLeave === 'function') {
+			this.resourceDragLeave(event.dataTransfer);
 		}
 	},
 
 	dragover(event) {
-		for (let type of types) {
-			if (event.dataTransfer.types.includes(`x-resource/${type}`)) {
-				event.dataTransfer.dropEffect = 'link';
-				event.preventDefault();
+		let type;
+		for (let t of types) {
+			if (event.dataTransfer.types.includes(`x-resource/${t}`)) {
+				type = t;
+				break;
 			}
+		}
+		if (!type) { return }
+		event.stopPropagation();
+		event.preventDefault();
+		if (type && typeof this.resourceDragOver === 'function') {
+			this.resourceDragOver(event.dataTransfer);
 		}
 	},
 
 	drop(event) {
-		for (let type of types) {
-			if (event.dataTransfer.types.includes(`x-resource/${type}`)) {
-				event.preventDefault();
-				if (typeof this.resourceDrop === 'function') {
-					this.resourceDrop(JSON.parse(event.dataTransfer.getData(`x-resource/${type}`)), type);
-					return;
-				}
+		let type;
+		for (let t of types) {
+			if (event.dataTransfer.types.includes(`x-resource/${t}`)) {
+				type = t;
+				break;
 			}
+		}
+		if (!type) { return }
+		event.preventDefault();
+		event.stopPropagation();
+		if (type && typeof this.resourceDrop === 'function') {
+			this.resourceDrop(JSON.parse(event.dataTransfer.getData(`x-resource/${type}`)), type);
 		}
 	}
 

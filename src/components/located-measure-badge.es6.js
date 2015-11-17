@@ -12,7 +12,7 @@ import {
 export const LocatedMeasureBadge = ng.Component({
 	selector: 'located-measure-badge',
 	inputs:   ['model', 'highlight'],
-	events: ['select'],
+	events:   ['select', 'dragging'],
 	host: {
 		'[class.resource-badge]':  `  true                                             `,
 		'[title]':                 ` model.quality + ' of ' + lyphTemplateModel().name `,
@@ -37,13 +37,17 @@ export const LocatedMeasureBadge = ng.Component({
 }).Class({
 
 	constructor() {
-		this.select = new ng.EventEmitter();
+		this.select   = new ng.EventEmitter();
+		this.dragging = new ng.EventEmitter();
 	},
 
 	lyphTemplateModel() {
 		return getResource_sync('lyphTemplates', this.model.lyphTemplate);
 	},
 
-	...DraggableResource('locatedmeasure', 'model')
+	...DraggableResource('locatedmeasure', 'model', {
+		dragstart() { this.dragging.next(this.model) },
+		dragend()   { this.dragging.next(null)       }
+	})
 
 });

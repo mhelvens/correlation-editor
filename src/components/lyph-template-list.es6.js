@@ -2,21 +2,27 @@ import ng      from 'angular2/angular2';
 import $       from 'jquery';
 import scrollbarSize from 'scrollbar-size';
 
-import {getAllResources_sync} from '../util/resources.es6.js';
+import {LyphTemplateView} from './lyph-template-view.es6.js';
 
-import {LyphTemplateView}   from './lyph-template-view.es6.js';
-import {FieldSubstringPipe} from '../util/substring-pipe.es6.js';
+import {getAllResources_sync} from '../util/resources.es6.js';
+import {DeleteTarget}         from '../util/delete-target.es6.js';
+import {FieldSubstringPipe}   from '../util/substring-pipe.es6.js';
 
 export const LyphTemplateList = ng.Component({
 	selector: 'lyph-template-list',
 	events: ['select']
 }).View({directives: [
 	ng.NgFor,
-	LyphTemplateView
+	LyphTemplateView,
+	DeleteTarget
 ], pipes: [
 	FieldSubstringPipe
 ], template: `
 
+	<delete-target (catch)       = " deleteResource($event)                 "
+	               [show]        = " showTrashcan                           "
+	               [style.width] = " 'calc(100% - '+(scrollbarSize+2)+'px)' "
+	               style         = " z-index: 10; left: 2px;                "></delete-target>
 	<div class="list-group" style="margin: 0">
 		<div  class        = "form-group has-feedback"
               style        = "padding: 0; margin: 0; position: absolute; left: 1px; z-index: 9;"
@@ -37,7 +43,8 @@ export const LyphTemplateList = ng.Component({
 		         style          = "padding: 10px"
 		        [lyph-template] = "model"
 		        [highlight]     = "filter"
-		        (select)        = "select.next($event)">
+		        (select)        = "select.next($event)"
+		        (dragging)      = "showTrashcan = !!$event">
         </button>
 	</div>
 
@@ -47,6 +54,11 @@ export const LyphTemplateList = ng.Component({
 		this.models = getAllResources_sync('lyphTemplates');
 		this.select = new ng.EventEmitter();
 		this.scrollbarSize = scrollbarSize();
+		this.showTrashcan = false;
+	},
+
+	deleteResource(resource) {
+		console.log('TODO: delete', resource);
 	},
 
 	filterText(model) { return model.name }

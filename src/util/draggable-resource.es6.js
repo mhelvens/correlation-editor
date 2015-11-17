@@ -11,10 +11,12 @@ export const DraggableResource = (type, modelKey, {dragstart, dragend} = {}) => 
 		event.dataTransfer.setData(`x-resource/${type}`, JSON.stringify(this[modelKey]));
 		event.dataTransfer.setData('text/plain',         JSON.stringify(this[modelKey]));
 		if (dragstart) { dragstart.call(this, event) }
+		event.stopPropagation();
 	},
 
 	dragend(event) {
 		if (dragend) { dragend.call(this, event) }
+		event.stopPropagation();
 	}
 
 });

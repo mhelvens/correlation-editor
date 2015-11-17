@@ -1,18 +1,15 @@
 import ng from 'angular2/angular2';
 
-import {UnderlineSubstringPipe} from '../util/underline-substring-pipe.es6.js';
-import {EscapeHtmlPipe}         from '../util/escape-html-pipe.es6.js';
-import {
-	draggableResourceHostAttributes,
-	DraggableResource
-} from '../util/draggable-resource.es6.js';
+import {UnderlineSubstringPipe}                             from '../util/underline-substring-pipe.es6.js';
+import {EscapeHtmlPipe}                                     from '../util/escape-html-pipe.es6.js';
+import {draggableResourceHostAttributes, DraggableResource} from '../util/draggable-resource.es6.js';
 
 
 
 export const LyphTemplateView = ng.Component({
 	selector: '[lyph-template]',
 	inputs:   ['model: lyphTemplate', 'highlight'],
-	events: ['select'],
+	events: ['select', 'dragging'],
 	host: {
 		'[style.borderColor]': ` "#999"     `,
 		'[title]':             ` model.name `,
@@ -35,7 +32,7 @@ export const LyphTemplateView = ng.Component({
 		:host       { background-color: #fee !important }
 		:host:hover { background-color: #fcc !important }
 
-		div.resource-view > div.text-content {
+		:host  .text-content {
 			font-weight: bold;
 		}
 
@@ -43,9 +40,13 @@ export const LyphTemplateView = ng.Component({
 }).Class({
 
 	constructor() {
-		this.select = new ng.EventEmitter();
+		this.select   = new ng.EventEmitter();
+		this.dragging = new ng.EventEmitter();
 	},
 
-	...DraggableResource('lyphtemplate', 'model')
+	...DraggableResource('lyphtemplate', 'model', {
+		dragstart() { this.dragging.next(this.model) },
+		dragend()   { this.dragging.next(null)       }
+	}),
 
 });

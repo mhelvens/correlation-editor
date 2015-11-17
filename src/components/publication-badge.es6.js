@@ -10,7 +10,7 @@ import {
 export const PublicationBadge = ng.Component({
 	selector: 'publication-badge',
 	inputs:   ['model', 'highlight'],
-	events: ['select'],
+	events:   ['select', 'dragging'],
 	pipes: [
 		UnderlineSubstringPipe,
 		EscapeHtmlPipe
@@ -31,8 +31,12 @@ export const PublicationBadge = ng.Component({
 
 	constructor() {
 		this.select = new ng.EventEmitter();
+		this.dragging = new ng.EventEmitter();
 	},
 
-	...DraggableResource('publication', 'model')
+	...DraggableResource('publication', 'model', {
+		dragstart() { this.dragging.next(this.model) },
+		dragend()   { this.dragging.next(null)       }
+	})
 
 });
