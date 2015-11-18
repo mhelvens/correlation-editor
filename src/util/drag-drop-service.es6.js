@@ -6,42 +6,47 @@ export class DragDropService {
 		this[_inTheAir] = {};
 	}
 
-	sender({resource, effectAllowed, dragstart, dragend}) {
+	sender(context, {resourceKey, effectAllowed, dragstart, dragend}) {
 		return (event) => {
 			let response;
+			let resource = context[resourceKey];
+			let key      = JSON.stringify(resource); // TODO: this is for backwards compatibility; should later be changed to resource.id
 			switch (event.type) {
 				case 'dragstart': {
-					response = dragstart && dragstart();
-					let key = resource.id;
+					response = dragstart && dragstart.call(context);
 					this[_inTheAir][key] = resource;
-					event.dataTransfer.setData(`x-resource/${resource.type}`, key);
+					event.dataTransfer.setData(`x-resource/${resource.type.toLowerCase()}`, key);
 				} break;
 				case 'dragend': {
-					response = dragend();
+					response = dragend && dragend.call(context); // TODO: return success or failure status from recipient
 					delete this[_inTheAir][key];
 				} break;
 			}
 			if (response === false) {
-				event.preventDefault();
+				event.effectAllowed = effectAllowed;
 				event.stopPropagation();
 			}
 		};
 	}
 
-	recipient({acceptedTypes, dragenter, dragleave, drop}) {
+	recipient(context, {acceptedTypes, dropEffect, dragenter, dragleave, dragover, drop}) {
 		return (event) => {
 			for (let type of acceptedTypes) {
-				if (event.dataTransfer.getData(`x-resource/${type}`)) { // TODO: make sure this is automatically lowercased, like the sender-side
-					let key      = event.dataTransfer.getData(`x-resource/${type}`);
+				if (event.dataTransfer.types.includes(`x-resource/${type.toLowerCase()}`)) {
+					let key = event.dataTransfer.getData(`x-resource/${type.toLowerCase()}`);
 					let resource = this[_inTheAir][key];
 					let response;
 					switch (event.type) {
-						case 'dragenter': { response = dragenter && dragenter(resource) } break;
-						case 'dragleave': { response = dragleave && dragleave(resource) } break;
-						case 'drop':      { response = drop      && drop     (resource) } break;
+						case 'dragover':  { response = dragover  && dragover .call(context) } break;
+						case 'dragenter': { response = dragenter && dragenter.call(context) } break;
+						case 'dragleave': { response = dragleave && dragleave.call(context) } break;
+						case 'drop':      { response = drop      && drop     .call(context, resource || JSON.parse(key)) } break; // TODO: this is for backwards compatibility; should later remove '|| JSON.parse(key)'
 					}
 					if (response === false) {
-						event.preventDefault();
+						if (event.type === 'dragenter' || event.type === 'dragover') {
+							event.dataTransfer.dropEffect = dropEffect;
+							event.preventDefault();
+						}
 						event.stopPropagation();
 					}
 				}
@@ -51,4 +56,4 @@ export class DragDropService {
 
 }
 
-// TODO: use this service to clean up drag/drop code
+// TODO: use this service to clean up drag/drop code across the project

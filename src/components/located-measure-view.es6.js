@@ -17,8 +17,13 @@ export const LocatedMeasureView = ng.Component({
 	host: {
 		'[style.borderColor]': ` "#999"                                          `,
 		'[title]':             ` model.quality + ' of ' + lyphTemplateModel.name `,
-		...resourceDropAreaHostAttributes,
-		...draggableResourceHostAttributes
+		'draggable':    "true",
+		'(dragstart)': ` dds($event) `,
+		'(dragend)':   ` dds($event) `,
+		'(dragover)':  ` ddr($event) `,
+		'(dragenter)': ` ddr($event) `,
+		'(dragleave)': ` ddr($event) `,
+		'(drop)':      ` ddr($event) `
 	},
 	directives: [
 		ng.NgIf,
@@ -52,7 +57,31 @@ export const LocatedMeasureView = ng.Component({
 }).Class({
 
 	constructor: [DragDropService, function(dd) {
-		this.dd       = dd; // TODO
+		this.dds = dd.sender(this, {
+			resourceKey:   'model',
+			effectAllowed: 'link',
+			dragstart() { this.dragging.next(this.model); return false; },
+			dragend()   { this.dragging.next(null);       return false; }
+		});
+		this.ddr = dd.recipient(this, {
+			acceptedTypes: ['lyphtemplate'],
+			dropEffect: 'link',
+			dragover:  false,
+			dragenter: false, // TODO: react to these for visual hints
+			dragleave: false, //
+			drop(resource) {
+				(async () => {
+					try {
+						await request.post(`/locatedMeasures/${this.model.id}`).send({ lyphTemplate: resource.id });
+						this.model.lyphTemplate = resource.id;
+						this.lyphTemplateModel  = resource;
+					} catch (err) {
+						console.error(err);
+					}
+				})();
+				return false;
+			}
+		});
 		this.select   = new ng.EventEmitter();
 		this.dragging = new ng.EventEmitter();
 	}],
@@ -61,16 +90,16 @@ export const LocatedMeasureView = ng.Component({
 		this.lyphTemplateModel = getResource_sync('lyphTemplates', this.model.lyphTemplate);
 	},
 
-	...DraggableResource('locatedmeasure', 'model', {
-		dragstart() { this.dragging.next(this.model) },
-		dragend()   { this.dragging.next(null)       }
-	}),
+	//...DraggableResource('locatedmeasure', 'model', {
+	//	dragstart() { this.dragging.next(this.model) },
+	//	dragend()   { this.dragging.next(null)       }
+	//}),
 
-	...ResourceDropArea (['lyphtemplate']),
-	async resourceDrop({id}) {
-		await request.post(`/locatedMeasures/${this.model.id}`).send({ lyphTemplate: id });
-		this.model.lyphTemplate = id;
-		this.lyphTemplateModel = getResource_sync('lyphTemplates', id);
-	}
+	//...ResourceDropArea (['lyphtemplate']),
+	//async resourceDrop({id}) {
+	//	await request.post(`/locatedMeasures/${this.model.id}`).send({ lyphTemplate: id });
+	//	this.model.lyphTemplate = id;
+	//	this.lyphTemplateModel = getResource_sync('lyphTemplates', id);
+	//}
 
 });
