@@ -32,7 +32,7 @@ export const LocatedMeasureView = ng.Component({
 	pipes: [
 		UnderlineSubstringPipe,
 		EscapeHtmlPipe
-	],
+	], // TODO: remove the .resource-view div from these view templates, and use the host instead
 	template: `
 
 		<div class="resource-view" (click)="select.next(model)">
