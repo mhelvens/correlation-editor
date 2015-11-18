@@ -1,8 +1,9 @@
 import ng from 'angular2/angular2';
 
-import {UnderlineSubstringPipe}                             from '../util/underline-substring-pipe.es6.js';
-import {EscapeHtmlPipe}                                     from '../util/escape-html-pipe.es6.js';
-import {draggableResourceHostAttributes, DraggableResource} from '../util/draggable-resource.es6.js';
+import {DragDropService}        from '../util/drag-drop-service.es6.js';
+import {UnderlineSubstringPipe} from '../util/underline-substring-pipe.es6.js';
+import {EscapeHtmlPipe}         from '../util/escape-html-pipe.es6.js';
+
 
 export const LyphTemplateBadge = ng.Component({
 	selector: 'lyph-template-badge',
@@ -17,7 +18,7 @@ export const LyphTemplateBadge = ng.Component({
 		'[title]':                 ' model.name                                             ',
 		'[inner-html]':            ' model.name | escapeHTML | underlineSubstring:highlight ',
 		'(click)':                 ` select.next(model); $event.stopPropagation();          `,
-		...draggableResourceHostAttributes
+		...DragDropService.canBeDragged('dds')
 	},
 	template: ``,
 	styles: [`
@@ -26,14 +27,15 @@ export const LyphTemplateBadge = ng.Component({
 	`]
 }).Class({
 
-	constructor() {
+	constructor: [DragDropService, function(dd) {
 		this.select   = new ng.EventEmitter();
 		this.dragging = new ng.EventEmitter();
-	},
-
-	...DraggableResource('lyphtemplate', 'model', {
-		dragstart() { this.dragging.next(this.model) },
-		dragend()   { this.dragging.next(null)       }
-	})
+		this.dds = dd.sender(this, {
+			resourceKey:   'model',
+			effectAllowed: 'link',
+			dragstart() { this.dragging.next(this.model); return false; },
+			dragend()   { this.dragging.next(null);       return false; }
+		});
+	}]
 
 });

@@ -5,11 +5,11 @@ import {LocatedMeasureBadge}    from './located-measure-badge.es6.js';
 import {PublicationBadge}       from './publication-badge.es6.js';
 import {ClinicalIndexBadge}     from './clinical-index-badge.es6.js';
 
-import {getResource_sync}                                   from '../util/resources.es6.js';
-import {UnderlineSubstringPipe}                             from '../util/underline-substring-pipe.es6.js';
-import {EscapeHtmlPipe}                                     from '../util/escape-html-pipe.es6.js';
-import {resourceDropAreaHostAttributes, ResourceDropArea}   from '../util/resource-drop-area.es6.js';
-import {draggableResourceHostAttributes, DraggableResource} from '../util/draggable-resource.es6.js';
+import {DragDropService}        from '../util/drag-drop-service.es6.js';
+import {getResource_sync}       from '../util/resources.es6.js';
+import {UnderlineSubstringPipe} from '../util/underline-substring-pipe.es6.js';
+import {EscapeHtmlPipe}         from '../util/escape-html-pipe.es6.js';
+
 
 export const CorrelationView = ng.Component({
 	selector: '[correlation]',
@@ -20,8 +20,8 @@ export const CorrelationView = ng.Component({
 		'[class.panel-default]': ' true     ',
 		'[class.hovering]':      ' hovering ',
 		'[style.display]':       ' "block"  ',
-		...resourceDropAreaHostAttributes,
-		...draggableResourceHostAttributes
+		...DragDropService.canBeDragged('dds'),
+		...DragDropService.acceptsDrop ('ddr')
 	},
 	directives: [
 		PublicationBadge,
@@ -32,44 +32,6 @@ export const CorrelationView = ng.Component({
 		UnderlineSubstringPipe,
 		EscapeHtmlPipe
 	],
-	styles: [`
-
-		.panel-heading            { border: solid 1px #444;                   }
-		.panel-heading.no-comment { border-bottom-style: none;                }
-		.panel-footer             { border: solid 1px #444;                   }
-		.panel-footer.no-comment  { border-top-style: none; margin-top: -5px; }
-
-		.panel-heading {
-			padding: 10px !important;
-			cursor: pointer;
-		}
-
-		.panel-heading.no-comment a {
-			cursor: default;
-		}
-
-		.panel-heading a .comment-indicator {
-		    color: grey;
-		}
-
-		.panel-heading a .comment-indicator .glyphicon {
-		    margin-left: 3px
-		}
-
-		.panel-heading a.collapsed       .glyphicon-chevron-down  { display: none }
-		.panel-heading a:not(.collapsed) .glyphicon-chevron-right { display: none }
-
-		.resource-badge {
-			margin: 0 5px 5px 0;
-		}
-		.panel-footer {
-			padding: 10px 10px 5px 10px !important;
-		}
-
-		:host          .panel-heading, :host          .panel-footer { background-color: #eee !important }
-		:host.hovering .panel-heading, :host.hovering .panel-footer { background-color: #ddd !important }
-
-	`],
 	template: `
 
 		<div class="panel-heading" [class.no-comment]="!model.comment">
@@ -107,49 +69,97 @@ export const CorrelationView = ng.Component({
 				                      (dragging)  = "dragging.next($event)"></located-measure-badge>
 		</div>
 
-	`
+	`,
+	styles: [`
+
+		.panel-heading            { border: solid 1px #444;                   }
+		.panel-heading.no-comment { border-bottom-style: none;                }
+		.panel-footer             { border: solid 1px #444;                   }
+		.panel-footer.no-comment  { border-top-style: none; margin-top: -5px; }
+
+		.panel-heading {
+			padding: 10px !important;
+			cursor: pointer;
+		}
+
+		.panel-heading.no-comment a {
+			cursor: default;
+		}
+
+		.panel-heading a .comment-indicator {
+		    color: grey;
+		}
+
+		.panel-heading a .comment-indicator .glyphicon {
+		    margin-left: 3px
+		}
+
+		.panel-heading a.collapsed       .glyphicon-chevron-down  { display: none }
+		.panel-heading a:not(.collapsed) .glyphicon-chevron-right { display: none }
+
+		.resource-badge {
+			margin: 0 5px 5px 0;
+		}
+		.panel-footer {
+			padding: 10px 10px 5px 10px !important;
+		}
+
+		:host          .panel-heading, :host          .panel-footer { background-color: #eee !important }
+		:host.hovering .panel-heading, :host.hovering .panel-footer { background-color: #ddd !important }
+
+	`]
 }).Class({
 
-	constructor() {
+	constructor: [DragDropService, function(dd) {
 		this.select   = new ng.EventEmitter();
 		this.dragging = new ng.EventEmitter();
 		this.hovering = false;
-	},
+		this.dds = dd.sender(this, {
+			resourceKey:   'model',
+			effectAllowed: 'link',
+			dragstart() { this.dragging.next(this.model); return false; },
+			dragend()   { this.dragging.next(null);       return false; }
+		});
+		this.ddr = dd.recipient(this, {
+			acceptedTypes: ['Publication', 'ClinicalIndex', 'LocatedMeasure'],
+			dropEffect: 'link',
+			dragover:  false,
+			dragenter: false, // TODO: react to these for visual hints
+			dragleave: false, //
+			drop(resource) {
+				let {id, type} = resource;
+				(async () => {
+					try {
+						switch (type) {
+							case 'Publication': {
+								await request.post(`/correlations/${this.model.id}`).send({ publication: id });
+								this.model.publication = id;
+								this.publicationModel = getResource_sync('publications', id); // TODO: get directly from 'drop' argument
+							} break;
+							case 'ClinicalIndex': {
+								await request.put(`/correlations/${this.model.id}/clinicalIndices/${id}`);
+								this.model.clinicalIndices = [...new Set([...this.model.clinicalIndices, id])];
+								this.clinicalIndexModels = getResource_sync('clinicalIndices', this.model.clinicalIndices); // TODO: get directly from 'drop' argument
+							} break;
+							case 'LocatedMeasure': {
+								await request.put(`/correlations/${this.model.id}/locatedMeasures/${id}`);
+								this.model.locatedMeasures = [...new Set([...this.model.locatedMeasures, id])];
+								this.locatedMeasureModels = getResource_sync('locatedMeasures', this.model.locatedMeasures); // TODO: get directly from 'drop' argument
+							} break;
+						}
+					} catch (err) {
+						console.error(err);
+					}
+				})();
+				return false;
+			}
+		});
+	}],
 
 	onInit() {
 		this.publicationModel     = getResource_sync('publications',    this.model.publication    );
 		this.clinicalIndexModels  = getResource_sync('clinicalIndices', this.model.clinicalIndices);
 		this.locatedMeasureModels = getResource_sync('locatedMeasures', this.model.locatedMeasures);
-	},
-
-	...DraggableResource('correlation', 'model', {
-		dragstart() {
-			this.dragging.next(this.model);
-		},
-		dragend() {
-			this.dragging.next(null);
-		}
-	}),
-
-	...ResourceDropArea(['publication', 'clinicalindex', 'locatedmeasure']),
-	async resourceDrop({type, id}) {
-		switch (type) {
-			case 'Publication': {
-				await request.post(`/correlations/${this.model.id}`).send({ publication: id });
-				this.model.publication = id;
-				this.publicationModel = getResource_sync('publications', id);
-			} break;
-			case 'ClinicalIndex': {
-				await request.put(`/correlations/${this.model.id}/clinicalIndices/${id}`);
-				this.model.clinicalIndices = [...new Set([...this.model.clinicalIndices, id])];
-				this.clinicalIndexModels = getResource_sync('clinicalIndices', this.model.clinicalIndices);
-			} break;
-			case 'LocatedMeasure': {
-				await request.put(`/correlations/${this.model.id}/locatedMeasures/${id}`);
-				this.model.locatedMeasures = [...new Set([...this.model.locatedMeasures, id])];
-				this.locatedMeasureModels = getResource_sync('locatedMeasures', this.model.locatedMeasures);
-			} break;
-		}
 	}
 
 });

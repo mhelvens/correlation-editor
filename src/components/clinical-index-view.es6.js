@@ -1,12 +1,8 @@
 import ng from 'angular2/angular2';
 
+import {DragDropService}        from '../util/drag-drop-service.es6.js'
 import {UnderlineSubstringPipe} from '../util/underline-substring-pipe.es6.js';
 import {EscapeHtmlPipe}         from '../util/escape-html-pipe.es6.js';
-import {
-	draggableResourceHostAttributes,
-	DraggableResource
-} from '../util/draggable-resource.es6.js';
-
 
 
 export const ClinicalIndexView = ng.Component({
@@ -16,7 +12,7 @@ export const ClinicalIndexView = ng.Component({
 	host: {
 		'[style.borderColor]':     ` "#999"                   `,
 		'[title]':                 ` model.title || model.uri `,
-		...draggableResourceHostAttributes
+		...DragDropService.canBeDragged('dds')
 	},
 	directives: [
 		ng.NgIf
@@ -45,15 +41,16 @@ export const ClinicalIndexView = ng.Component({
 	`]
 }).Class({
 
-	constructor() {
+	constructor: [DragDropService, function(dd) {
 		this.select   = new ng.EventEmitter();
 		this.dragging = new ng.EventEmitter();
-	},
-
-	...DraggableResource('clinicalindex', 'model', {
-		dragstart() { this.dragging.next(this.model) },
-		dragend()   { this.dragging.next(null) }
-	}),
+		this.dds = dd.sender(this, {
+			resourceKey:   'model',
+			effectAllowed: 'link',
+			dragstart() { this.dragging.next(this.model); return false; },
+			dragend()   { this.dragging.next(null);       return false; }
+		});
+	}],
 
 	uriIsUrl() { return /^https?:\/\//.test(this.model.uri) }
 

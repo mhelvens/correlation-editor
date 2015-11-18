@@ -1,7 +1,8 @@
 import ng from 'angular2/angular2';
 import $  from 'jquery';
 
-import {resourceDropAreaHostAttributes, ResourceDropArea} from './resource-drop-area.es6.js';
+import {DragDropService} from '../util/drag-drop-service.es6.js'
+
 
 export const DeleteTarget = ng.Component({
 	selector: 'delete-target',
@@ -10,7 +11,7 @@ export const DeleteTarget = ng.Component({
 	host: {
 		'[class.highlight]' : ` draggingOver  `,
 		'[class.expanded]'  : ` show          `,
-		...resourceDropAreaHostAttributes
+		...DragDropService.acceptsDrop ('ddr')
 	},
 	template: `
 
@@ -52,30 +53,25 @@ export const DeleteTarget = ng.Component({
 	`]
 }).Class({
 
-	constructor: [ng.ElementRef, function ({nativeElement}) {
+	constructor: [ng.ElementRef, DragDropService, function ({nativeElement}, dd) {
 		this.catch = new ng.EventEmitter();
 		this.nativeElement = $(nativeElement);
-
 		this.show          = false;
 		this.draggingOver  = false;
-
+		this.ddr = dd.recipient(this, {
+			acceptedTypes: ['publication', 'clinicalindex', 'locatedmeasure', 'lyphtemplate', 'correlation'],
+			dropEffect: 'link',
+			dragover:  false,
+			dragenter() { this.draggingOver = true;  return false; },
+			dragleave() { this.draggingOver = false; return false; },
+			drop(resource) {
+				this.catch.next(resource);
+				this.draggingOver = false;
+				return false;
+			}
+		});
 		this._hideCb = () => { this.nativeElement.css('visibility', 'hidden') };
 	}],
-
-	...ResourceDropArea(['publication', 'clinicalindex', 'locatedmeasure', 'lyphtemplate', 'correlation']),
-
-	resourceDragEnter(resource) {
-		this.draggingOver = true;
-	},
-
-	resourceDragLeave(resource) {
-		this.draggingOver = false;
-	},
-
-	resourceDrop(resource) {
-		this.catch.next(resource);
-		this.draggingOver = false;
-	},
 
 	onChanges({show}) {
 		if (show) {

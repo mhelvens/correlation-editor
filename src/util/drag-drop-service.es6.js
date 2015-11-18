@@ -56,4 +56,11 @@ export class DragDropService {
 
 }
 
-// TODO: use this service to clean up drag/drop code across the project
+DragDropService.canBeDragged = (dds) => ({'[draggable]': ` true           `,
+                                          '(dragstart)': ` ${dds}($event) `,
+                                          '(dragend)':   ` ${dds}($event) `});
+
+DragDropService.acceptsDrop = (ddr) => ({'(dragover)':  ` ${ddr}($event) `,
+                                         '(dragenter)': ` ${ddr}($event) `,
+                                         '(dragleave)': ` ${ddr}($event) `,
+                                         '(drop)':      ` ${ddr}($event) `});

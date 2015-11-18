@@ -1,14 +1,13 @@
 import ng                from 'angular2/angular2';
 import request           from '../libs/superagent.es6.js';
-import {DragDropService} from '../util/drag-drop-service.es6.js';
-
-import {UnderlineSubstringPipe}                             from '../util/underline-substring-pipe.es6.js';
-import {EscapeHtmlPipe}                                     from '../util/escape-html-pipe.es6.js';
-import {getResource_sync}                                   from '../util/resources.es6.js';
-import {draggableResourceHostAttributes, DraggableResource} from '../util/draggable-resource.es6.js';
-import {resourceDropAreaHostAttributes,  ResourceDropArea}  from '../util/resource-drop-area.es6.js';
 
 import {LyphTemplateBadge} from './lyph-template-badge.es6.js';
+
+import {DragDropService}        from '../util/drag-drop-service.es6.js';
+import {UnderlineSubstringPipe} from '../util/underline-substring-pipe.es6.js';
+import {EscapeHtmlPipe}         from '../util/escape-html-pipe.es6.js';
+import {getResource_sync}       from '../util/resources.es6.js';
+
 
 export const LocatedMeasureView = ng.Component({
 	selector: '[located-measure]',
@@ -17,13 +16,8 @@ export const LocatedMeasureView = ng.Component({
 	host: {
 		'[style.borderColor]': ` "#999"                                          `,
 		'[title]':             ` model.quality + ' of ' + lyphTemplateModel.name `,
-		'draggable':    "true",
-		'(dragstart)': ` dds($event) `,
-		'(dragend)':   ` dds($event) `,
-		'(dragover)':  ` ddr($event) `,
-		'(dragenter)': ` ddr($event) `,
-		'(dragleave)': ` ddr($event) `,
-		'(drop)':      ` ddr($event) `
+		...DragDropService.canBeDragged('dds'),
+		...DragDropService.acceptsDrop ('ddr')
 	},
 	directives: [
 		ng.NgIf,
@@ -57,6 +51,8 @@ export const LocatedMeasureView = ng.Component({
 }).Class({
 
 	constructor: [DragDropService, function(dd) {
+		this.select   = new ng.EventEmitter();
+		this.dragging = new ng.EventEmitter();
 		this.dds = dd.sender(this, {
 			resourceKey:   'model',
 			effectAllowed: 'link',
@@ -82,24 +78,10 @@ export const LocatedMeasureView = ng.Component({
 				return false;
 			}
 		});
-		this.select   = new ng.EventEmitter();
-		this.dragging = new ng.EventEmitter();
 	}],
 
 	onInit() {
 		this.lyphTemplateModel = getResource_sync('lyphTemplates', this.model.lyphTemplate);
-	},
-
-	//...DraggableResource('locatedmeasure', 'model', {
-	//	dragstart() { this.dragging.next(this.model) },
-	//	dragend()   { this.dragging.next(null)       }
-	//}),
-
-	//...ResourceDropArea (['lyphtemplate']),
-	//async resourceDrop({id}) {
-	//	await request.post(`/locatedMeasures/${this.model.id}`).send({ lyphTemplate: id });
-	//	this.model.lyphTemplate = id;
-	//	this.lyphTemplateModel = getResource_sync('lyphTemplates', id);
-	//}
+	}
 
 });
