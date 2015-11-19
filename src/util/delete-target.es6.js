@@ -15,7 +15,7 @@ export const DeleteTarget = ng.Component({
 	},
 	template: `
 
-		<div style="display: inline-block; position: absolute; bottom: 3px;">
+		<div style="display: inline-block; position: absolute; bottom: 3px; pointer-events: none;">
 			<span class="glyphicon glyphicon-trash"></span>
 		</div>
 

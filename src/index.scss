@@ -6,12 +6,11 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-.icon-pubmed      { background-image: url(./img/pubmed.png)      !important }
-.icon-doctors     { background-image: url(./img/doctors.png)     !important }
-.icon-thermometer { background-image: url(./img/thermometer.png) !important }
-.icon-artery      { background-image: url(./img/artery.png)      !important }
-.icon-atom        { background-image: url(./img/atom.png)        !important }
-.icon-grouping    { background-image: url(./img/grouping.png)    !important }
+.icon-Publication    { background-image: url(img/icon-Publication.png)    !important }
+.icon-ClinicalIndex  { background-image: url(img/icon-ClinicalIndex.png)  !important }
+.icon-LocatedMeasure { background-image: url(img/icon-LocatedMeasure.png) !important }
+.icon-LyphTemplate   { background-image: url(img/icon-LyphTemplate.png)   !important }
+.icon-Correlation    { background-image: url(img/icon-Correlation.png)    !important }
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -32,13 +31,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-.resource-view {
-  display:         flex;
-  align-items:     center;
-  justify-content: space-between;
-}
-
-.resource-view > div.icon {
+div.icon {
+  display:         inline-block;
   background:      no-repeat center;
   background-size: contain;
   min-width:       3em;
@@ -46,23 +40,6 @@
   max-width:       3em;
   max-height:      3em;
 }
-
-.resource-view > div.text-content {
-  display:    block;
-  margin:     0 0.8em;
-  text-align: center;
-}
-
-.resource-view > a.link {
-  align-self: flex-start;
-  min-width:  1em;
-}
-
-.resource-view > div.icon         { flex-grow: 0 }
-.resource-view > div.text-content { flex-grow: 1 }
-.resource-view > a.link           { flex-grow: 0 }
-
-////////////////////////////////////////////////////////////////////////////////
 
 span.icon {
   display:         inline-block;
@@ -74,6 +51,14 @@ span.icon {
   max-width:       1.8em;
   max-height:      1.8em;
   margin:         -0.4em;
+}
+
+span.icon-medium {
+  min-width:  2em;
+  min-height: 2em;
+  max-width:  2em;
+  max-height: 2em;
+  margin:    -0.4em;
 }
 
 span.icon-in-button {
@@ -95,6 +80,32 @@ span.icon-small {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+.resource-view {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  border:          solid 1px #999;
+  padding:         10px;
+  cursor:          pointer;
+}
+
+.resource-view > div.text-content {
+  display:    block;
+  margin:     0 0.8em;
+  text-align: center;
+}
+
+.resource-view > a.link {
+  align-self: flex-start;
+  min-width:  1em;
+}
+
+.resource-view > div.icon         { flex: 0 0 auto }
+.resource-view > div.text-content { flex: 1 1 auto }
+.resource-view > a.link           { flex: 0 0 auto }
+
+////////////////////////////////////////////////////////////////////////////////
+
 .resource-badge {
   @extend         .label;
   display:        inline-block   !important;
@@ -111,6 +122,18 @@ span.icon-small {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+@mixin individual-form-control-validation($text-color: #555, $border-color: #ccc, $background-color: #f5f5f5) {
+  border-color: $border-color;
+  @include box-shadow(inset 0 1px 1px rgba(0,0,0,.075)); // Redeclare so transitions work
+  &:focus {
+    border-color: darken($border-color, 10%);
+    $shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 6px lighten($border-color, 20%);
+    @include box-shadow($shadow);
+  }
+}
 
+.control-has-error {
+  @include individual-form-control-validation($state-danger-text, $state-danger-text, $state-danger-bg);
+}
 
 ////////////////////////////////////////////////////////////////////////////////

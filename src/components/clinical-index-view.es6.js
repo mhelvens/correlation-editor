@@ -6,14 +6,7 @@ import {EscapeHtmlPipe}         from '../util/escape-html-pipe.es6.js';
 
 
 export const ClinicalIndexView = ng.Component({
-	selector: '[clinical-index]',
-	inputs:   ['model: clinicalIndex', 'highlight'],
-	events: ['select', 'dragging'],
-	host: {
-		'[style.borderColor]':     ` "#999"                   `,
-		'[title]':                 ` model.title || model.uri `,
-		...DragDropService.canBeDragged('dds')
-	},
+	selector: 'clinical-index-view',
 	directives: [
 		ng.NgIf
 	],
@@ -21,16 +14,22 @@ export const ClinicalIndexView = ng.Component({
 		UnderlineSubstringPipe,
 		EscapeHtmlPipe
 	],
+	inputs: ['model', 'highlight'],
+	events: ['select', 'dragging'],
+	host: {
+		'[class.resource-view]': ` true                     `,
+		'[title]':               ` model.title || model.uri `,
+		'(click)':               ` select.next(model)       `,
+		...DragDropService.canBeDragged('dds')
+	},
 	template: `
 
-		<div class="resource-view" (click)="select.next(model)">
-			<div class="icon icon-doctors"></div>
-			<div class="text-content" [inner-html]="(model.title || model.uri) | escapeHTML | underlineSubstring:highlight"></div>
-			<a *ng-if = "uriIsUrl()"
-			   class  = "link glyphicon glyphicon-new-window"
-			   [href] = "model.uri"
-			   target = "_blank"></a>
-		</div>
+		<div class="icon icon-ClinicalIndex"></div>
+		<div class="text-content" [inner-html]="(model.title || model.uri) | escapeHTML | underlineSubstring:highlight"></div>
+		<a *ng-if = "uriIsUrl()"
+		   class  = "link glyphicon glyphicon-new-window"
+		   [href] = "model.uri"
+		   target = "_blank"></a>
 
 	`,
 	styles: [`

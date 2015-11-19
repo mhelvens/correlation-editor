@@ -48,12 +48,13 @@ let layout = new GoldenLayout({
 			width:   50,
 			content: [{
 				type:          'component',
-				height:         85,
+				height:         75,
 				componentName: 'centerPanel'
 			}, {
 				type:          'component',
-				height:         15,
-				componentName: 'bottomCenterPanel'
+				height:         25,
+				componentName: 'bottomCenterPanel',
+				componentState: { startClosed: true }
 			}]
 		}, {
 			type:   'column',
@@ -114,19 +115,25 @@ await new Promise((resolve, reject) => {
 			CorrelationList,
 			ResourceEditor
 		], template: `
-			<publication-list     (select) = "selectedModel = $event"                        ></publication-list>
-			<clinical-index-list  (select) = "selectedModel = $event"                        ></clinical-index-list>
-			<located-measure-list (select) = "selectedModel = $event"                        ></located-measure-list>
-			<lyph-template-list   (select) = "selectedModel = $event"                        ></lyph-template-list>
-			<correlation-list     (select) = "selectedModel = $event"                        ></correlation-list>
-			<resource-editor      (cancel) = "selectedModel = null" [model] = "selectedModel"></resource-editor>
+			<publication-list     (select) = "openEditor($event)"                     ></publication-list>
+			<clinical-index-list  (select) = "openEditor($event)"                     ></clinical-index-list>
+			<located-measure-list (select) = "openEditor($event)"                     ></located-measure-list>
+			<lyph-template-list   (select) = "openEditor($event)"                     ></lyph-template-list>
+			<correlation-list     (select) = "openEditor($event)"                     ></correlation-list>
+			<resource-editor      (cancel) = "closeEditor()" [model] = "selectedModel"></resource-editor>
 		`}).Class({
 			constructor() {
-
-				this.selectedModel = null;
-
+				this.closeEditor();
 			},
-			onInit: resolve
+			onInit: resolve,
+			closeEditor() {
+				this.selectedModel = null;
+				bottomCenterPanel.data('container').setSize(undefined, 1);
+			},
+			openEditor(model) {
+				this.selectedModel = model;
+				bottomCenterPanel.data('container').setSize(undefined, 300);
+			}
 		});
 		$('<app>').appendTo('body');
 		ng.bootstrap(App, injection);
@@ -147,72 +154,3 @@ $('resource-editor')     .detach().appendTo(bottomCenterPanel);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 } catch (err) { console.log('Error:', err) } })();
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//let Engine = ng.Class({
-//
-//	constructor() {},
-//
-//	start() {
-//		console.log('starting engine');
-//	}
-//
-//});
-//let OtherEngine = ng.Class({
-//
-//	constructor() {},
-//
-//	start() {
-//		console.log('starting OTHER engine');
-//	}
-//
-//});
-//let Doors = ng.Class({
-//
-//	constructor() {},
-//
-//	open() {
-//		console.log('opening doors');
-//	}
-//
-//});
-//let Car = ng.Class({
-//
-//	constructor: [Engine, Doors, function(engine, doors) {
-//		this.engine = engine;
-//		this.doors  = doors;
-//	}],
-//
-//	doStuff() {
-//		this.doors.open();
-//		this.engine.start();
-//	}
-//
-//});
-//let App = ng.Component({
-//	selector: 'app'
-//}).View({template: `
-//
-//	<div>Hello World!</div>
-//
-//	<div>
-//		{{ JSON.stringify({ foo: 'bar' }) }}
-//	</div>
-//
-//`}).Class({
-//	constructor: [Car, function(car) {
-//
-//		car.doStuff();
-//		car.foo = 'bar';
-//
-//	}]
-//});
-//$('body').empty().append('<app>');
-//ng.bootstrap(App, [Car, ng.provide(Engine, {useClass: OtherEngine}), Doors, ng.provide(JSON, {useValue: 'huh?'})]);
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

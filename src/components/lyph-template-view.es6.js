@@ -6,24 +6,23 @@ import {EscapeHtmlPipe}         from '../util/escape-html-pipe.es6.js';
 
 
 export const LyphTemplateView = ng.Component({
-	selector: '[lyph-template]',
-	inputs:   ['model: lyphTemplate', 'highlight'],
-	events: ['select', 'dragging'],
-	host: {
-		'[style.borderColor]': ` "#999"     `,
-		'[title]':             ` model.name `,
-		...DragDropService.canBeDragged('dds')
-	},
+	selector: 'lyph-template-view',
 	pipes: [
 		UnderlineSubstringPipe,
 		EscapeHtmlPipe
 	],
+	inputs: ['model', 'highlight'],
+	events: ['select', 'dragging'],
+	host: {
+		'[class.resource-view]': ` true               `,
+		'[title]':               ` model.name         `,
+		'(click)':               ` select.next(model) `,
+		...DragDropService.canBeDragged('dds')
+	},
 	template: `
 
-		<div class="resource-view" (click)="select.next(model)">
-			<div class="icon icon-artery"></div>
-			<div class="text-content" [inner-html]="model.name | escapeHTML | underlineSubstring:highlight"></div>
-		</div>
+		<div class="icon icon-LyphTemplate"></div>
+		<div class="text-content" [inner-html]="model.name | escapeHTML | underlineSubstring:highlight"></div>
 
 	`,
 	styles: [`
@@ -31,7 +30,7 @@ export const LyphTemplateView = ng.Component({
 		:host       { background-color: #fee !important }
 		:host:hover { background-color: #fcc !important }
 
-		:host  .text-content {
+		:host .text-content {
 			font-weight: bold;
 		}
 

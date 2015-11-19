@@ -12,9 +12,9 @@ import {EscapeHtmlPipe}         from '../util/escape-html-pipe.es6.js';
 
 
 export const CorrelationView = ng.Component({
-	selector: '[correlation]',
+	selector: 'correlation-view',
 	events: ['select', 'dragging'],
-	inputs: ['model: correlation', 'highlight'],
+	inputs: ['model', 'highlight'],
 	host: {
 		'[class.panel]':         ' true     ',
 		'[class.panel-default]': ' true     ',
@@ -37,7 +37,7 @@ export const CorrelationView = ng.Component({
 		<div class="panel-heading" [class.no-comment]="!model.comment">
 			<h4 class="panel-title" style="font-weight: bold; display: flex; align-content: center; align-items: center;">
 				<div (click)="select.next(model)" (mouseover)="hovering = true" (mouseout)="hovering = false" style="flex-grow: 1">
-					<span class="icon icon-grouping" style="margin-right: 0"></span>&nbsp;
+					<span class="icon icon-Correlation" style="margin-right: 0"></span>&nbsp;
 					Correlation
 				</div>
 				<a data-toggle="collapse" href="#collapse-{{ model.id }}" class="collapsed" style="display: block; text-decoration: none; cursor: pointer; flex-grow: 0">
@@ -53,20 +53,26 @@ export const CorrelationView = ng.Component({
 			<div class="panel-body" [inner-html]="model.comment | escapeHTML | underlineSubstring:highlight"></div>
 		</div>
 		<div class="panel-footer" [class.no-comment]="!model.comment">
-			   <publication-badge [model]     = "publicationModel"
-			                      [highlight] = "highlight"
-			                      (select)    = "select.next($event)"
-				                  (dragging)  = "dragging.next($event)"></publication-badge><!--
-			--><clinical-index-badge *ng-for     = "#ciModel of clinicalIndexModels"
-			                         [model]     = "ciModel"
-			                         [highlight] = "highlight"
-			                         (select)    = "select.next($event)"
-				                     (dragging)  = "dragging.next($event)"></clinical-index-badge><!--
-			--><located-measure-badge *ng-for     = "#lmModel of locatedMeasureModels"
-			                          [model]     = "lmModel"
-			                          [highlight] = "highlight"
-			                          (select)    = "select.next($event)"
-				                      (dragging)  = "dragging.next($event)"></located-measure-badge>
+			<publication-badge
+				[model]     = "publicationModel"
+				[highlight] = "highlight"
+				(select)    = "select.next($event)"
+				(dragging)  = "dragging.next($event)">
+			</publication-badge><!--
+			--><clinical-index-badge
+				*ng-for     = "#ciModel of clinicalIndexModels"
+				[model]     = "ciModel"
+				[highlight] = "highlight"
+				(select)    = "select.next($event)"
+				(dragging)  = "dragging.next($event)">
+			</clinical-index-badge><!--
+			--><located-measure-badge
+				*ng-for     = "#lmModel of locatedMeasureModels"
+				[model]     = "lmModel"
+				[highlight] = "highlight"
+				(select)    = "select.next($event)"
+				(dragging)  = "dragging.next($event)">
+			</located-measure-badge>
 		</div>
 
 	`,

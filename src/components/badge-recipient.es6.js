@@ -1,5 +1,4 @@
 import ng      from 'angular2/angular2';
-import request from '../libs/superagent.es6.js';
 
 import {LyphTemplateBadge} from './lyph-template-badge.es6.js';
 
@@ -34,12 +33,11 @@ export const LocatedMeasureView = ng.Component({
 		<div class="text-content">
 			<span [inner-html]="model.quality | escapeHTML | underlineSubstring:highlight"></span>
 			<b>of</b>
-			<lyph-template-badge
-				*ng-if      = "lyphTemplateModel"
-				[model]     = "lyphTemplateModel"
-				[highlight] = "highlight"
-				(select)    = "select.next($event)"
-				(dragging)  = "dragging.next($event)">
+			<lyph-template-badge *ng-if      = "lyphTemplateModel"
+			                     [model]     = "lyphTemplateModel"
+			                     [highlight] = "highlight"
+			                     (select)    = "select.next($event)"
+			                     (dragging)  = "dragging.next($event)">
 			</lyph-template-badge>
 		</div>
 
