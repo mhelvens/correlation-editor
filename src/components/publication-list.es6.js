@@ -34,7 +34,7 @@ export const PublicationList = ng.Component({
 				type        = "text"
 				class       = "form-control"
 				style       = "border-radius: 0"
-		        placeholder = "Filter"
+		        placeholder = "Filter Publications"
 				(input)     = "filter = $event.target.value"
 				(paste)     = "filter = $event.target.value">
 			</input>

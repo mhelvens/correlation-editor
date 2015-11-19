@@ -35,7 +35,7 @@ export const LyphTemplateList = ng.Component({
 				type        = "text"
 				class       = "form-control"
 				style       = "border-radius: 0"
-		        placeholder = "Filter"
+		        placeholder = "Filter Lyph Templates"
 				(input)     = "filter = $event.target.value"
 				(paste)     = "filter = $event.target.value">
 			</input>

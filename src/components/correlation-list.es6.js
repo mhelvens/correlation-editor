@@ -36,7 +36,7 @@ export const CorrelationList = ng.Component({
 				type        = "text"
 				class       = "form-control"
 				style       = "border-radius: 0"
-				placeholder = "Filter"
+				placeholder = "Filter Correlations"
 				[disabled]  = "!hasFilters()"
 				(input)     = "filter = $event.target.value"
 				(paste)     = "filter = $event.target.value">

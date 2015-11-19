@@ -36,7 +36,7 @@ export const LocatedMeasureList = ng.Component({
 					type        = "text"
 					class       = "form-control"
 					style       = "border-radius: 0"
-			        placeholder = "Filter"
+			        placeholder = "Filter Located Measures"
 					(input)     = "filter = $event.target.value"
 					(paste)     = "filter = $event.target.value">
 				</input>
