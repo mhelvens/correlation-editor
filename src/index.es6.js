@@ -1,9 +1,10 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-import ng            from 'angular2/angular2';
+import './util/polyfills.es6.js';
+
+import {Component, bootstrap} from 'angular2/angular2';
 import $             from 'jquery';
 import scrollbarSize from 'scrollbar-size';
-import request       from './libs/superagent.es6.js';
 import GoldenLayout  from './libs/golden-layout.es6.js';
 import                    './libs/bootstrap.es6.js';
 
@@ -18,10 +19,16 @@ import {DragDropService}     from './util/drag-drop-service.es6.js';
 
 import './index.scss';
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/* what to inject into the AngularJS 2 Ecosystem */
+const injection = [DragDropService];
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 (async () => { try {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 
 /* golden layout setup */
@@ -98,45 +105,48 @@ centerPanel.scroll(() => {
 await preloadAllResources();
 
 
-/* determine injections */
-const injection = [DragDropService];
-
-
 /* AngularJS 2 app component */
 await new Promise((resolve, reject) => {
 	try {
-		let App = ng.Component({
-			selector: 'app'
-		}).View({directives: [
-			PublicationList,
-			ClinicalIndexList,
-			LocatedMeasureList,
-			LyphTemplateList,
-			CorrelationList,
-			ResourceEditor
-		], template: `
-			<publication-list     (select) = "openEditor($event)"                     ></publication-list>
-			<clinical-index-list  (select) = "openEditor($event)"                     ></clinical-index-list>
-			<located-measure-list (select) = "openEditor($event)"                     ></located-measure-list>
-			<lyph-template-list   (select) = "openEditor($event)"                     ></lyph-template-list>
-			<correlation-list     (select) = "openEditor($event)"                     ></correlation-list>
-			<resource-editor      (cancel) = "closeEditor()" [model] = "selectedModel"></resource-editor>
-		`}).Class({
+		@Component({
+			selector: 'app',
+			directives: [
+				PublicationList,
+				ClinicalIndexList,
+				LocatedMeasureList,
+				LyphTemplateList,
+				CorrelationList,
+				ResourceEditor
+			],
+			template: `
+				<publication-list     (select) = " openEditor($event) "></publication-list>
+				<clinical-index-list  (select) = " openEditor($event) "></clinical-index-list>
+				<located-measure-list (select) = " openEditor($event) "></located-measure-list>
+				<lyph-template-list   (select) = " openEditor($event) "></lyph-template-list>
+				<correlation-list     (select) = " openEditor($event) "></correlation-list>
+
+				<resource-editor
+					(close) = " closeEditor() "
+					[model] = " selectedModel ">
+				</resource-editor>
+			`
+		})
+		class App {
+			onInit() { resolve() }
 			constructor() {
 				this.closeEditor();
-			},
-			onInit: resolve,
+			}
 			closeEditor() {
 				this.selectedModel = null;
 				bottomCenterPanel.data('container').setSize(undefined, 1);
-			},
+			}
 			openEditor(model) {
 				this.selectedModel = model;
 				bottomCenterPanel.data('container').setSize(undefined, 300);
 			}
-		});
+		}
 		$('<app>').appendTo('body');
-		ng.bootstrap(App, injection);
+		bootstrap(App, injection);
 	} catch (err) { reject(err) }
 });
 
@@ -148,7 +158,6 @@ $('located-measure-list').detach().appendTo(topRightPanel    );
 $('lyph-template-list')  .detach().appendTo(bottomRightPanel );
 $('correlation-list')    .detach().appendTo(centerPanel      );
 $('resource-editor')     .detach().appendTo(bottomCenterPanel);
-
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

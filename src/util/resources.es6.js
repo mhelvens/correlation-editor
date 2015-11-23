@@ -1,4 +1,4 @@
-import request from '../libs/superagent.es6.js';
+export const request = require('../libs/superagent.es6.js');
 
 request.basePath = 'http://localhost:8888';
 
@@ -34,3 +34,4 @@ export function getResource_sync(type, ids) {
 		return models[type][ids];
 	}
 }
+

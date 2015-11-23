@@ -1,10 +1,10 @@
-import ng from 'angular2/angular2';
-import $  from 'jquery';
+import {NgIf, NgFor, Component, EventEmitter, Inject, ElementRef} from 'angular2/angular2';
+import $ from 'jquery';
 
 import {DragDropService} from '../util/drag-drop-service.es6.js'
 
 
-export const DeleteTarget = ng.Component({
+@Component({
 	selector: 'delete-target',
 	inputs:   ['show'],
 	events:   ['catch'],
@@ -51,10 +51,15 @@ export const DeleteTarget = ng.Component({
 		}
 
 	`]
-}).Class({
+})
+export class DeleteTarget {
 
-	constructor: [ng.ElementRef, DragDropService, function ({nativeElement}, dd) {
-		this.catch = new ng.EventEmitter();
+	catch = new EventEmitter;
+
+	constructor(
+		@Inject(ElementRef)      {nativeElement},
+		@Inject(DragDropService) dd
+	) {
 		this.nativeElement = $(nativeElement);
 		this.show          = false;
 		this.draggingOver  = false;
@@ -71,7 +76,7 @@ export const DeleteTarget = ng.Component({
 			}
 		});
 		this._hideCb = () => { this.nativeElement.css('visibility', 'hidden') };
-	}],
+	}
 
 	onChanges({show}) {
 		if (show) {
@@ -84,4 +89,4 @@ export const DeleteTarget = ng.Component({
 		}
 	}
 
-});
+}

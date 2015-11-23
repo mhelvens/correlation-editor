@@ -8,21 +8,21 @@ export const correlationEditor = `
 	     (dragleave) = " ddc($event)     "
 	     (drop)      = " ddc($event)     ">
 		<publication-badge
-			*ng-if      = " publicationModel        "
-			[model]     = " publicationModel        "
+			*ng-if      = " resource.publication    "
+			[model-id]  = " resource.publication    "
 			(dragging)  = " showTrashcan = !!$event ">
 		</publication-badge><!--
 		--><clinical-index-badge
-			*ng-for     = " #ciModel of clinicalIndexModels "
-			[model]     = " ciModel                         "
+			*ng-for     = " #id of resource.clinicalIndices "
+			[model-id]  = "  id                             "
 			(dragging)  = " showTrashcan = !!$event         ">
 		</clinical-index-badge><!--
 		--><located-measure-badge
-			*ng-for     = " #lmModel of locatedMeasureModels "
-			[model]     = " lmModel                          "
-			(dragging)  = " showTrashcan = !!$event          ">
+			*ng-for     = " #id of resource.locatedMeasures "
+			[model-id]  = "  id                             "
+			(dragging)  = " showTrashcan = !!$event         ">
 		</located-measure-badge>
-		<span class="fake-placeholder" *ng-if="!publicationModel && !clinicalIndexModels.length && !locatedMeasureModels.length">
+		<span class="fake-placeholder" *ng-if="!resource.publication && !resource.clinicalIndices.length && !resource.locatedMeasures.length">
 			 Publication & Correlates
 		</span>
 	</div>

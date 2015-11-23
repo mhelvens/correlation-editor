@@ -1,20 +1,19 @@
-import ng      from 'angular2/angular2';
-import request from '../libs/superagent.es6.js';
+import {NgIf, NgFor, Component, EventEmitter, Inject} from 'angular2/angular2';
 
-import {LocatedMeasureBadge}    from './located-measure-badge.es6.js';
-import {PublicationBadge}       from './publication-badge.es6.js';
-import {ClinicalIndexBadge}     from './clinical-index-badge.es6.js';
+import {ModelRepresentation} from '../util/model-representation.es6.js';
+import {LocatedMeasureBadge} from './located-measure-badge.es6.js';
+import {PublicationBadge}    from './publication-badge.es6.js';
+import {ClinicalIndexBadge}  from './clinical-index-badge.es6.js';
 
-import {DragDropService}        from '../util/drag-drop-service.es6.js';
-import {getResource_sync}       from '../util/resources.es6.js';
-import {UnderlineSubstringPipe} from '../util/underline-substring-pipe.es6.js';
-import {EscapeHtmlPipe}         from '../util/escape-html-pipe.es6.js';
+import {DragDropService}           from '../util/drag-drop-service.es6.js';
+import {getResource_sync, request} from '../util/resources.es6.js';
+import {UnderlineSubstringPipe}    from '../util/underline-substring-pipe.es6.js';
+import {EscapeHtmlPipe}            from '../util/escape-html-pipe.es6.js';
 
-
-export const CorrelationView = ng.Component({
+@Component({
 	selector: 'correlation-view',
 	events: ['select', 'dragging'],
-	inputs: ['model', 'highlight'],
+	inputs: ['modelId', 'highlight'],
 	host: {
 		'[class.panel]':         ' true     ',
 		'[class.panel-default]': ' true     ',
@@ -54,24 +53,25 @@ export const CorrelationView = ng.Component({
 		</div>
 		<div class="panel-footer" [class.no-comment]="!model.comment">
 			<publication-badge
-				[model]     = "publicationModel"
-				[highlight] = "highlight"
-				(select)    = "select.next($event)"
-				(dragging)  = "dragging.next($event)">
+				*ng-if      = " model.publication     "
+				[model-id]  = " model.publication     "
+				[highlight] = " highlight             "
+				(select)    = " select.next($event)   "
+				(dragging)  = " dragging.next($event) ">
 			</publication-badge><!--
 			--><clinical-index-badge
-				*ng-for     = "#ciModel of clinicalIndexModels"
-				[model]     = "ciModel"
-				[highlight] = "highlight"
-				(select)    = "select.next($event)"
-				(dragging)  = "dragging.next($event)">
+				*ng-for     = " #id of model.clinicalIndices "
+				[model-id]  = " id                           "
+				[highlight] = " highlight                    "
+				(select)    = " select.next($event)          "
+				(dragging)  = " dragging.next($event)        ">
 			</clinical-index-badge><!--
 			--><located-measure-badge
-				*ng-for     = "#lmModel of locatedMeasureModels"
-				[model]     = "lmModel"
-				[highlight] = "highlight"
-				(select)    = "select.next($event)"
-				(dragging)  = "dragging.next($event)">
+				*ng-for     = " #id of model.locatedMeasures "
+				[model-id]  = " id                           "
+				[highlight] = " highlight                    "
+				(select)    = " select.next($event)          "
+				(dragging)  = " dragging.next($event)        ">
 			</located-measure-badge>
 		</div>
 
@@ -114,11 +114,16 @@ export const CorrelationView = ng.Component({
 		:host.hovering .panel-heading, :host.hovering .panel-footer { background-color: #ddd !important }
 
 	`]
-}).Class({
+})
+export class CorrelationView extends ModelRepresentation {
 
-	constructor: [DragDropService, function(dd) {
-		this.select   = new ng.EventEmitter();
-		this.dragging = new ng.EventEmitter();
+	static endpoint = 'correlations';
+
+	select   = new EventEmitter;
+	dragging = new EventEmitter;
+
+	constructor(@Inject(DragDropService) dd) {
+		super();
 		this.hovering = false;
 		this.dds = dd.sender(this, {
 			resourceKey:   'model',
@@ -160,7 +165,7 @@ export const CorrelationView = ng.Component({
 				return false;
 			}
 		});
-	}],
+	}
 
 	onInit() {
 		this.publicationModel     = getResource_sync('publications',    this.model.publication    );
@@ -168,4 +173,4 @@ export const CorrelationView = ng.Component({
 		this.locatedMeasureModels = getResource_sync('locatedMeasures', this.model.locatedMeasures);
 	}
 
-});
+}

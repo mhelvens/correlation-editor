@@ -1,25 +1,25 @@
-import ng      from 'angular2/angular2';
-import request from '../libs/superagent.es6.js';
+import {NgIf, NgFor, Component, EventEmitter, Inject} from 'angular2/angular2';
 
 import {LyphTemplateBadge} from './lyph-template-badge.es6.js';
 
-import {DragDropService}        from '../util/drag-drop-service.es6.js';
-import {UnderlineSubstringPipe} from '../util/underline-substring-pipe.es6.js';
-import {EscapeHtmlPipe}         from '../util/escape-html-pipe.es6.js';
-import {getResource_sync}       from '../util/resources.es6.js';
+import {ModelRepresentation}       from '../util/model-representation.es6.js';
+import {DragDropService}           from '../util/drag-drop-service.es6.js';
+import {UnderlineSubstringPipe}    from '../util/underline-substring-pipe.es6.js';
+import {EscapeHtmlPipe}            from '../util/escape-html-pipe.es6.js';
+import {getResource_sync, request} from '../util/resources.es6.js';
 
 
-export const LocatedMeasureView = ng.Component({
+@Component({
 	selector: 'located-measure-view',
 	directives: [
-		ng.NgIf,
+		NgIf,
 		LyphTemplateBadge
 	],
 	pipes: [
 		UnderlineSubstringPipe,
 		EscapeHtmlPipe
 	],
-	inputs: ['model', 'highlight'],
+	inputs: ['modelId', 'highlight'],
 	events: ['select', 'dragging'],
 	host: {
 		'[class.resource-view]': ` true                                            `,
@@ -35,11 +35,11 @@ export const LocatedMeasureView = ng.Component({
 			<span [inner-html]="model.quality | escapeHTML | underlineSubstring:highlight"></span>
 			<b>of</b>
 			<lyph-template-badge
-				*ng-if      = "lyphTemplateModel"
-				[model]     = "lyphTemplateModel"
-				[highlight] = "highlight"
-				(select)    = "select.next($event)"
-				(dragging)  = "dragging.next($event)">
+				*ng-if      = " model.lyphTemplate    "
+				[model-id]  = " model.lyphTemplate    "
+				[highlight] = " highlight             "
+				(select)    = " select  .next($event) "
+				(dragging)  = " dragging.next($event) ">
 			</lyph-template-badge>
 		</div>
 
@@ -50,11 +50,16 @@ export const LocatedMeasureView = ng.Component({
 		:host:hover { background-color: #cfc !important }
 
 	`]
-}).Class({
+})
+export class LocatedMeasureView extends ModelRepresentation {
 
-	constructor: [DragDropService, function(dd) {
-		this.select   = new ng.EventEmitter();
-		this.dragging = new ng.EventEmitter();
+	static endpoint = 'locatedMeasures';
+
+	select   = new EventEmitter;
+	dragging = new EventEmitter;
+
+	constructor(@Inject(DragDropService) dd) {
+		super();
 		this.dds = dd.sender(this, {
 			resourceKey:   'model',
 			effectAllowed: 'link',
@@ -80,10 +85,10 @@ export const LocatedMeasureView = ng.Component({
 				return false;
 			}
 		});
-	}],
+	}
 
 	onInit() {
 		this.lyphTemplateModel = getResource_sync('lyphTemplates', this.model.lyphTemplate);
 	}
 
-});
+}

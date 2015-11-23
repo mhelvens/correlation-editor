@@ -1,4 +1,4 @@
-import ng            from 'angular2/angular2';
+import {NgSwitch, FORM_DIRECTIVES, Component, EventEmitter, Inject} from 'angular2/angular2';
 import scrollbarSize from 'scrollbar-size';
 
 import {clinicalIndexEditor}  from '../components/clinical-index-editor.es6.js';
@@ -11,26 +11,31 @@ import {PublicationBadge}     from '../components/publication-badge.es6.js';
 import {ClinicalIndexBadge}   from '../components/clinical-index-badge.es6.js';
 import {LyphTemplateBadge}    from '../components/lyph-template-badge.es6.js';
 
-import {DragDropService}        from '../util/drag-drop-service.es6.js';
-import {getResource_sync}       from '../util/resources.es6.js';
-import {UnderlineSubstringPipe} from '../util/underline-substring-pipe.es6.js';
-import {EscapeHtmlPipe}         from '../util/escape-html-pipe.es6.js';
-import {DeleteTarget}           from '../util/delete-target.es6.js';
+import {DragDropService}           from '../util/drag-drop-service.es6.js';
+import {getResource_sync, request} from '../util/resources.es6.js';
+import {UnderlineSubstringPipe}    from '../util/underline-substring-pipe.es6.js';
+import {EscapeHtmlPipe}            from '../util/escape-html-pipe.es6.js';
+import {DeleteTarget}              from '../util/delete-target.es6.js';
+import {sw}                        from '../util/misc.es6.js';
 
 
-export const ResourceEditor = ng.Component({
+
+const META_PROPERTIES = ['id', 'key'];
+
+
+
+@Component({
 	selector: 'resource-editor',
 	inputs:   ['model'],
-	events:   ['submit', 'reset', 'cancel'],
+	events:   ['submit', 'reset', 'close'],
 	host: {},
 	pipes: [
-		ng.JsonPipe,
-		UnderlineSubstringPipe, // TODO: why do I need to include these two here? They're already in the badge components
-		EscapeHtmlPipe
+		UnderlineSubstringPipe, // These need to be here because of a bug in angular2:
+		EscapeHtmlPipe          // https://github.com/angular/angular/issues/5388
 	],
 	directives: [
-		ng.NgSwitch,
-		ng.FORM_DIRECTIVES,
+		NgSwitch,
+		FORM_DIRECTIVES,
 		LyphTemplateBadge,
 		PublicationBadge,
 		ClinicalIndexBadge,
@@ -39,15 +44,10 @@ export const ResourceEditor = ng.Component({
 	],
 	template: `
 
-		<div *ng-if="!model" class="placeholder">
-			click on a resource to edit it
-		</div>
-
 		<form *ng-if="model" #form="form" (submit)="submit.next(form.value)">
 
-			<header  class        = " navbar navbar-default                              "
-				     style        = " position: absolute; z-index: 9; left: 1px; top: 1px; border: 1px solid lightgray; border-radius: 0"
-				    [style.width] = " 'calc(100% - '+(scrollbarSize)+'px)'             ">
+			<header  class        = " navbar navbar-default                "
+				    [style.width] = " 'calc(100% - '+(scrollbarSize)+'px)' ">
 				<div class="container-fluid">
 	                <div class="navbar-header">
 						<div class="navbar-brand">
@@ -59,17 +59,17 @@ export const ResourceEditor = ng.Component({
 					</div>
 					<ul class="nav navbar-nav navbar-right">
 						<li>
-							<button type="button" (click)="reset.next()" [disabled]="!hasChanges()">
+							<button type="button" title="Discard Changes" (click)="reset.next()" [disabled]="isPristine()">
 								<span class="glyphicon glyphicon-refresh"></span>
 					        </button>
 						</li>
 						<li>
-							<button type="button" (click)="cancel.next()">
+							<button type="button" title="Cancel" (click)="close.next()">
 								<span class="glyphicon glyphicon-remove"></span>
 					        </button>
 						</li>
 						<li>
-							<button type="submit" [disabled]="!hasChanges()">
+							<button type="submit" title="Save Changes" [disabled]="isPristine()">
 								<span class="glyphicon glyphicon-ok"></span>
 					        </button>
 						</li>
@@ -77,7 +77,6 @@ export const ResourceEditor = ng.Component({
 				</div>
 			</header>
 			<delete-target
-				 style        = " z-index: 10; left: 2px; top: 50px;     "
 				[style.width] = " 'calc(100% - '+(scrollbarSize+2)+'px)' "
 				[show]        = " showTrashcan                           "
 				(catch)       = " removeBadge($event)                    ">
@@ -86,38 +85,32 @@ export const ResourceEditor = ng.Component({
 			<div style="visibility: hidden; height: 50px"></div>
 
 			<div class="control-container" [ng-switch]="model.type">
-
-				<template ng-switch-when="ClinicalIndex">
-					${clinicalIndexEditor}
-				</template>
-
-				<template ng-switch-when="Publication">
-					${publicationEditor}
-				</template>
-
-				<template ng-switch-when="LyphTemplate">
-					${lyphTemplateEditor}
-				</template>
-
-				<template ng-switch-when="LocatedMeasure">
-					${locatedMeasureEditor}
-				</template>
-
-				<template ng-switch-when="Correlation">
-					${correlationEditor}
-				</template>
-
+				<template ng-switch-when="ClinicalIndex" >${clinicalIndexEditor} </template>
+				<template ng-switch-when="Publication"   >${publicationEditor}   </template>
+				<template ng-switch-when="LyphTemplate"  >${lyphTemplateEditor}  </template>
+				<template ng-switch-when="LocatedMeasure">${locatedMeasureEditor}</template>
+				<template ng-switch-when="Correlation"   >${correlationEditor}   </template>
 			</div>
 
 		</form>
-
-
 
 	`,
 	styles: [`
 
 		:host header {
+			position: absolute;
+			left:     1px;
+			top:      1px;
+			z-index: 9;
 			margin: 0;
+			border: 1px solid lightgray;
+			border-radius: 0;
+		}
+
+		:host delete-target {
+			z-index: 10;
+			left: 2px;
+			top: 50px;
 		}
 
 		:host header button {
@@ -130,8 +123,8 @@ export const ResourceEditor = ng.Component({
 			cursor: pointer;
 		}
 
-		:host header button          { color: #777 }
-		:host header button:hover    { color: #000 }
+		:host header button          { color: #777                  }
+		:host header button:hover    { color: #000                  }
 		:host header button:disabled { color: #bbb; cursor: default }
 
 		:host .placeholder {
@@ -170,128 +163,131 @@ export const ResourceEditor = ng.Component({
 		}
 
 	`]
-}).Class({
+})
+export class ResourceEditor {
 
-	constructor: [DragDropService, function (dd) {
+	/* events */
+	submit = new EventEmitter;
+	reset  = new EventEmitter;
+	close  = new EventEmitter;
 
-		this.submit = new ng.EventEmitter();
-		this.reset  = new ng.EventEmitter();
-		this.cancel = new ng.EventEmitter();
+	/* local variables */
+	showTrashcan  = false;
+	scrollbarSize = scrollbarSize();
 
-		this.submit.subscribe(() => { this.persistModel() });
-		this.reset .subscribe(() => { this.resetModelTo(this.model) });
 
-		this.resource = {};
+	constructor(@Inject(DragDropService) dd) {
+
+		/* drag/drop recipient for correlation editor */
 		this.ddc = dd.recipient(this, {
 			acceptedTypes: ['Publication', 'ClinicalIndex', 'LocatedMeasure'],
 			dropEffect: 'link',
 			dragover:  false,
 			dragenter: false, // TODO: react to these for visual hints
 			dragleave: false, //
-			drop(resource) {
-				let {id, type} = resource;
+			drop({id, type}) {
 				switch (type) {
-					case 'Publication':    {
+					case 'Publication': {
 						this.resource.publication = id;
-						this.publicationModel = resource;
 					} break;
-					case 'ClinicalIndex':  {
+					case 'ClinicalIndex': {
 						this.resource.clinicalIndices = [...new Set([...this.resource.clinicalIndices, id])];
-						this.clinicalIndexModels = getResource_sync('clinicalIndices', this.resource.clinicalIndices);
 					} break;
 					case 'LocatedMeasure': {
 						this.resource.locatedMeasures = [...new Set([...this.resource.locatedMeasures, id])];
-						this.locatedMeasureModels = getResource_sync('locatedMeasures', this.resource.locatedMeasures);
 					} break;
 				}
 				return false;
 			}
 		});
+
+		/* drag/drop recipient for located measure editor */
 		this.ddlm = dd.recipient(this, {
 			acceptedTypes: ['LyphTemplate'],
 			dropEffect: 'link',
 			dragover:  false,
 			dragenter: false, // TODO: react to these for visual hints
 			dragleave: false, //
-			drop(resource) {
-				this.resource.lyphTemplate = resource.id;
-				this.lyphTemplateModel = resource;
+			drop({id}) {
+				this.resource.lyphTemplate = id;
 				return false;
 			}
 		});
 
-		this.scrollbarSize = scrollbarSize();
-		this.showTrashcan = false;
+		/* react to button clicks */
+		this.reset .subscribe(() => {
+			this.resource = { ...this.model };
+			for (let key of META_PROPERTIES) { delete this.resource[key] }
+		});
+		this.submit.subscribe(() => {
+			this.persistChanges();
+		});
+	}
 
-	}],
-
-	hasChanges() {
-		for (let key of new Set([...Object.keys(this.model), ...Object.keys(this.resource)])) {
-			if (key !== 'id' && this.model[key] !== this.resource[key]) {
-				if (Array.isArray(this.model[key]) && Array.isArray(this.resource[key])) {
-					let a = new Set(this.model[key]), b = new Set(this.resource[key]);
-					if (a.size !== b.size) { return true }
-					for (let v of a) { if (!b.has(v)) { return true } }
-				} else {
-					return true;
-				}
+	isPristine() {
+		let allKeys = new Set([...Object.keys(this.model), ...Object.keys(this.resource)]);
+		for (let key of allKeys) {
+			let a = this.model   [key];
+			let b = this.resource[key];
+			if (!META_PROPERTIES.includes(key) && a !== b) {
+				if (!Array.isArray(a))               { return false }
+				if (a.length !== b.length)           { return false }
+				for (let v of a) if (!b.includes(v)) { return false }
 			}
 		}
-		return false;
-	},
+		return true;
+	}
 
 	onChanges({model}) {
-		if (model) { this.resetModelTo(model.currentValue) }
-	},
-
-	resetModelTo(model) {
-		this.resource = { ...model };
-		delete this.resource.id;
-
-		delete this.publicationModel;
-		delete this.clinicalIndexModels;
-		delete this.locatedMeasureModels;
-		delete this.lyphTemplateModel;
-		if (this.resource.type === 'Correlation') {
-			this.publicationModel     = getResource_sync('publications',    this.resource.publication          ) || null;
-			this.clinicalIndexModels  = getResource_sync('clinicalIndices', this.resource.clinicalIndices || []) || [];
-			this.locatedMeasureModels = getResource_sync('locatedMeasures', this.resource.locatedMeasures || []) || [];
-		} else if (this.resource.type === 'LocatedMeasure') {
-			this.lyphTemplateModel    = getResource_sync('lyphTemplates',   this.resource.lyphTemplate         ) || null;
+		if (model) {
+			this.resource = { ...model.currentValue };
+			for (let key of META_PROPERTIES) { delete this.resource[key] }
 		}
-	},
+	}
 
 	removeBadge(model) {
 		switch (model.type) {
 			case 'Publication':    {
 				this.resource.publication = null;
-				this.publicationModel = null;
 			} break;
 			case 'ClinicalIndex':  {
 				let s = new Set([...this.resource.clinicalIndices]);
 				s.delete(model.id);
 				this.resource.clinicalIndices = [...s];
-				this.clinicalIndexModels = getResource_sync('clinicalIndices', this.resource.clinicalIndices);
 			} break;
 			case 'LocatedMeasure': {
 				let s = new Set([...this.resource.locatedMeasures]);
 				s.delete(model.id);
 				this.resource.locatedMeasures = [...s];
-				this.locatedMeasureModels = getResource_sync('locatedMeasures', this.resource.locatedMeasures);
 			} break;
 			case 'LyphTemplate': {
 				this.resource.lyphTemplate = null;
-				this.lyphTemplateModel = null;
 			} break;
 		}
 		this.showTrashcan = false;
-	},
+	}
 
-	persistModel() {
-		console.log(this.model.lyphTemplate, this.resource.lyphTemplate);
+	async persistChanges() {
+
+		/* make sure we don't send silly things */
+		for (let key of META_PROPERTIES) { delete this.resource[key] }
+
+		/* determine REST endpoint */
+		let endpoint = sw(this.model.type)({
+			'Publication':    'publications',
+			'ClinicalIndex':  'clinicalIndices',
+			'LocatedMeasure': 'locatedMeasures',
+			'LyphTemplate':   'lyphTemplates',
+			'Correlation':    'correlations'
+		});
+
+		/* persist to the server */
+		await request.post(`/${endpoint}/${this.model.id}`).send(this.resource);
+
+		/* persist to the local model */
 		Object.assign(this.model, this.resource);
-		// TODO: persist to server
+
 	}
 
 
-});
+}

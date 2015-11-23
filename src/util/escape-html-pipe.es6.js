@@ -1,9 +1,8 @@
-import ng from 'angular2/angular2';
+import {Pipe} from 'angular2/angular2';
 
-export const EscapeHtmlPipe = ng.Pipe({
-	name: 'escapeHTML'
-}).Class({
-	constructor() {},
+
+@Pipe({ name: 'escapeHTML' })
+export class EscapeHtmlPipe {
 	transform(html) {
 		return html
 			.replace(/&/g, "&amp;")
@@ -12,4 +11,4 @@ export const EscapeHtmlPipe = ng.Pipe({
 			.replace(/"/g, "&quot;")
 			.replace(/'/g, "&#039;");
 	}
-});
+}

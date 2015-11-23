@@ -15,11 +15,11 @@ export const locatedMeasureEditor = `
          (dragleave) = " ddlm($event)    "
          (drop)      = " ddlm($event)    ">
 		<lyph-template-badge
-			*ng-if      = "lyphTemplateModel"
-			[model]     = "lyphTemplateModel"
-			(dragging)  = "showTrashcan = !!$event">
+			*ng-if      = " resource.lyphTemplate   "
+			[model-id]  = " resource.lyphTemplate   "
+			(dragging)  = " showTrashcan = !!$event ">
 		</lyph-template-badge>
-		<span class="fake-placeholder" *ng-if="!lyphTemplateModel">
+		<span class="fake-placeholder" *ng-if="!resource.lyphTemplate">
 			Lyph Template
 		</span>
 	</div>

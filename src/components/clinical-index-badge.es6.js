@@ -1,13 +1,14 @@
-import ng from 'angular2/angular2';
+import {Component, EventEmitter, Inject} from 'angular2/angular2';
 
+import {ModelRepresentation}    from '../util/model-representation.es6.js';
 import {DragDropService}        from '../util/drag-drop-service.es6.js'
 import {UnderlineSubstringPipe} from '../util/underline-substring-pipe.es6.js';
 import {EscapeHtmlPipe}         from '../util/escape-html-pipe.es6.js';
 
 
-export const ClinicalIndexBadge = ng.Component({
+@Component({
 	selector: 'clinical-index-badge',
-	inputs:   ['model', 'highlight'],
+	inputs:   ['modelId', 'highlight'],
 	events:   ['select', 'dragging'],
 	pipes: [
 		UnderlineSubstringPipe,
@@ -25,17 +26,23 @@ export const ClinicalIndexBadge = ng.Component({
 		:host       { background-color: #ffe !important }
 		:host:hover { background-color: #ffc !important }
 	`]
-}).Class({
+})
+export class ClinicalIndexBadge extends ModelRepresentation {
 
-	constructor: [DragDropService, function(dd) {
-		this.select   = new ng.EventEmitter();
-		this.dragging = new ng.EventEmitter();
+	static endpoint = 'clinicalIndices';
+
+	select   = new EventEmitter;
+	dragging = new EventEmitter;
+
+	constructor(@Inject(DragDropService) dd) {
+		super();
 		this.dds = dd.sender(this, {
 			resourceKey:   'model',
 			effectAllowed: 'link',
 			dragstart() { this.dragging.next(this.model); return false; },
 			dragend()   { this.dragging.next(null);       return false; }
 		});
-	}]
+	}
 
-});
+
+}

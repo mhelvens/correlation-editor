@@ -17,7 +17,18 @@ module.exports = {
 	},
 	module: {
 		loaders: [
-			{ test: /\.es6\.js$/, loader: 'babel?compact=false'    },
+			{
+				test: /\.es6\.js$/,
+				loader: 'babel',
+				query: {
+					compact: false,
+					optional: [
+						'es7.decorators',
+						'es7.classProperties'
+					],
+					plugins: ['angular2-annotations']
+				}
+			},
 			{ test: /\.css$/,     loader: 'style!css!autoprefixer' },
 			{ test: /\.png$/,     loader: 'url'                    },
 			{ test: /^jquery$/,   loader: 'expose?$!expose?jQuery' },
