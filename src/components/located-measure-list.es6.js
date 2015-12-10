@@ -4,7 +4,7 @@ import scrollbarSize from 'scrollbar-size';
 
 import {LocatedMeasureView} from './located-measure-view.es6.js';
 
-import {getAllResources_sync, getResource_sync, request} from '../util/resources.es6.js';
+import {Resources, request}           from '../util/resources.es6.js';
 import {DeleteTarget}                                    from '../util/delete-target.es6.js';
 import {FieldSubstringPipe}                              from '../util/substring-pipe.es6.js';
 import {GlyphIcon}                                       from '../util/glyph-icon.es6.js';
@@ -12,7 +12,7 @@ import {GlyphIcon}                                       from '../util/glyph-ico
 
 @Component({
 	selector: 'located-measure-list',
-	events: ['select'],
+	events: ['select', 'add'],
 	directives: [
 		NgFor,
 		LocatedMeasureView,
@@ -54,13 +54,22 @@ import {GlyphIcon}                                       from '../util/glyph-ico
 			<div style="visibility: hidden; height: 34px"></div>
 
 			<located-measure-view
-				*ng-for     = " #model of models | fieldSubstring : filterText : filter : filterFlags "
+				*ng-for     = " #model of allResources['locatedMeasures'] | fieldSubstring : filterText : filter : filterFlags "
 				 class      = " list-group-item                                                       "
 				[model-id]  = " model.id                                                              "
 				[highlight] = " filter                                                                "
 				(select)    = " select.next($event)                                                   "
 				(dragging)  = " showTrashcan = !!$event                                               ">
 	        </located-measure-view>
+
+			<div style="visibility: hidden; height: 34px"></div>
+
+			<button type="button" class="btn btn-default"
+			        style="position: absolute; bottom: -1px; left: 1px; border-radius: 0;"
+			        [style.width] = " 'calc(100% - '+scrollbarSize+'px)' "
+			        (click)       = " add.next() ">
+				<span class="glyphicon glyphicon-plus"></span> Add new Located Measure
+			</button>
 		</div>
 
 	`,
@@ -69,9 +78,12 @@ import {GlyphIcon}                                       from '../util/glyph-ico
 export class LocatedMeasureList {
 
 	select = new EventEmitter;
+	add    = new EventEmitter;
 
-	constructor(@Inject(ChangeDetectorRef) ref) {
-		this.models = getAllResources_sync('locatedMeasures');
+	constructor(@Inject(ChangeDetectorRef) ref, @Inject(Resources) resources) {
+		this.resources = resources;
+		this.allResources = resources.getAllResources_sync();
+		this.models = this.resources.getAllResources_sync()['locatedMeasures'];
 		this.filterFlags = {
 			byLyphTemplate: true
 		};
@@ -83,16 +95,13 @@ export class LocatedMeasureList {
 		});
 		this.scrollbarSize = scrollbarSize();
 		this.showTrashcan = false;
+		this.filterText = this.filterText.bind(this);
 	}
 
 	async deleteResource(model) {
+		this.showTrashcan = false;
 		try {
-			if (model.type === 'LocatedMeasure') {
-				await request.delete(`/locatedMeasures/${model.id}`);
-				this.models = this.models.filter(({id}) => id !== model.id);
-			} else if (model.type === 'LyphTemplate') { // must be a badge
-				// TODO: remove lyph template from located measure... but we don't have enough context in the list component! Which located measure are we deleting it from?
-			}
+			await this.resources.deleteResource(model);
 		} catch (err) {
 			console.dir(err); // TODO: create human readable message for this
 		}
@@ -101,7 +110,7 @@ export class LocatedMeasureList {
 	filterText(model, flags) {
 		return [
 			(model.quality),
-			(flags.byLyphTemplate ? getResource_sync('lyphTemplates', model.lyphTemplate).name : "")
+			(flags.byLyphTemplate ? this.resources.getResource_sync('lyphTemplates', model.lyphTemplate).name : "")
 		].join(' of ');
 	}
 

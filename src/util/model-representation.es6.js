@@ -1,9 +1,16 @@
-import {getResource_sync} from './resources.es6.js';
+const model = Symbol('model');
 
 export class ModelRepresentation {
+	constructor({resources}) {
+		this.resources = resources;
+	}
 	onChanges({modelId}) {
 		if (modelId) {
-			this.model = getResource_sync(this.constructor.endpoint, modelId.currentValue);
+			this.model = this.resources.getResource_sync(this.constructor.endpoint, modelId.currentValue);
+
+			if (!this.model) {
+				console.dir(modelId);
+			}
 		}
 	}
 }

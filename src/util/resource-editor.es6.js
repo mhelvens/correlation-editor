@@ -12,7 +12,7 @@ import {ClinicalIndexBadge}   from '../components/clinical-index-badge.es6.js';
 import {LyphTemplateBadge}    from '../components/lyph-template-badge.es6.js';
 
 import {DragDropService}           from '../util/drag-drop-service.es6.js';
-import {getResource_sync, request} from '../util/resources.es6.js';
+import {Resources}           from '../util/resources.es6.js';
 import {UnderlineSubstringPipe}    from '../util/underline-substring-pipe.es6.js';
 import {EscapeHtmlPipe}            from '../util/escape-html-pipe.es6.js';
 import {DeleteTarget}              from '../util/delete-target.es6.js';
@@ -176,7 +176,8 @@ export class ResourceEditor {
 	scrollbarSize = scrollbarSize();
 
 
-	constructor(@Inject(DragDropService) dd) {
+	constructor(@Inject(DragDropService) dd, @Inject(Resources) resources) {
+		this.resources = resources;
 
 		/* drag/drop recipient for correlation editor */
 		this.ddc = dd.recipient(this, {
@@ -191,10 +192,10 @@ export class ResourceEditor {
 						this.resource.publication = id;
 					} break;
 					case 'ClinicalIndex': {
-						this.resource.clinicalIndices = [...new Set([...this.resource.clinicalIndices, id])];
+						this.resource.clinicalIndices = [...new Set([...(this.resource.clinicalIndices || []), id])];
 					} break;
 					case 'LocatedMeasure': {
-						this.resource.locatedMeasures = [...new Set([...this.resource.locatedMeasures, id])];
+						this.resource.locatedMeasures = [...new Set([...(this.resource.locatedMeasures || []), id])];
 					} break;
 				}
 				return false;
@@ -215,7 +216,7 @@ export class ResourceEditor {
 		});
 
 		/* react to button clicks */
-		this.reset .subscribe(() => {
+		this.reset.subscribe(() => {
 			this.resource = { ...this.model };
 			for (let key of META_PROPERTIES) { delete this.resource[key] }
 		});
@@ -251,12 +252,12 @@ export class ResourceEditor {
 				this.resource.publication = null;
 			} break;
 			case 'ClinicalIndex':  {
-				let s = new Set([...this.resource.clinicalIndices]);
+				let s = new Set(this.resource.clinicalIndices || []);
 				s.delete(model.id);
 				this.resource.clinicalIndices = [...s];
 			} break;
 			case 'LocatedMeasure': {
-				let s = new Set([...this.resource.locatedMeasures]);
+				let s = new Set(this.resource.locatedMeasures || []);
 				s.delete(model.id);
 				this.resource.locatedMeasures = [...s];
 			} break;
@@ -272,20 +273,33 @@ export class ResourceEditor {
 		/* make sure we don't send silly things */
 		for (let key of META_PROPERTIES) { delete this.resource[key] }
 
-		/* determine REST endpoint */
-		let endpoint = sw(this.model.type)({
-			'Publication':    'publications',
-			'ClinicalIndex':  'clinicalIndices',
-			'LocatedMeasure': 'locatedMeasures',
-			'LyphTemplate':   'lyphTemplates',
-			'Correlation':    'correlations'
-		});
+		///* determine REST endpoint */
+		//let endpoint = sw(this.model.type)({
+		//	'Publication':    'publications',
+		//	'ClinicalIndex':  'clinicalIndices',
+		//	'LocatedMeasure': 'locatedMeasures',
+		//	'LyphTemplate':   'lyphTemplates',
+		//	'Correlation':    'correlations'
+		//});
 
-		/* persist to the server */
-		await request.post(`/${endpoint}/${this.model.id}`).send(this.resource);
+		if (this.model.id) {
 
-		/* persist to the local model */
-		Object.assign(this.model, this.resource);
+			/* persist to the server */
+			let newModel = await this.resources.updateResource(this.model.id, this.resource);
+
+			/* persist to the local model */
+			Object.assign(this.model, newModel);
+
+		} else {
+
+			/* persist to the server */
+			let newModel = await this.resources.addNewResource(this.resource);
+
+			/* persist to the local model */
+			Object.assign(this.model,    newModel);
+			Object.assign(this.resource, newModel);
+
+		}
 
 	}
 

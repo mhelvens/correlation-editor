@@ -1,7 +1,7 @@
 import {NgIf, NgFor, Component, EventEmitter, Inject} from 'angular2/angular2';
 import scrollbarSize from 'scrollbar-size';
 
-import {getAllResources_sync, request} from '../util/resources.es6.js';
+import {Resources, request}           from '../util/resources.es6.js';
 import {DeleteTarget}                  from '../util/delete-target.es6.js';
 import {FieldSubstringPipe}            from '../util/substring-pipe.es6.js';
 import {GlyphIcon}                     from '../util/glyph-icon.es6.js';
@@ -11,7 +11,7 @@ import {PublicationView} from './publication-view.es6.js';
 
 @Component({
 	selector: 'publication-list',
-	events: ['select'],
+	events: ['select', 'add'],
 	directives: [
 		NgFor,
 		PublicationView,
@@ -45,13 +45,22 @@ import {PublicationView} from './publication-view.es6.js';
 			<div style="visibility: hidden; height: 34px"></div>
 
 			<publication-view
-				*ng-for     = " #model of models | fieldSubstring:filterText:filter "
+				*ng-for     = " #model of allResources['publications'] | fieldSubstring:filterText:filter "
 				 class      = " list-group-item                                     "
 				[model-id]  = " model.id                                            "
 				[highlight] = " filter                                              "
 				(select)    = " select.next($event)                                 "
 				(dragging)  = " showTrashcan = !!$event                             ">
 	        </publication-view>
+
+			<div style="visibility: hidden; height: 34px"></div>
+
+			<button type="button" class="btn btn-default"
+			        style="position: absolute; bottom: -1px; left: 1px; border-radius: 0;"
+			        [style.width] = " 'calc(100% - '+scrollbarSize+'px)' "
+			        (click)       = " add.next() ">
+				<span class="glyphicon glyphicon-plus"></span> Add new Lyph Template
+			</button>
 		</div>
 
 	`,
@@ -60,17 +69,19 @@ import {PublicationView} from './publication-view.es6.js';
 export class PublicationList {
 
 	select = new EventEmitter;
+	add    = new EventEmitter;
 
-	constructor() {
-		this.models = getAllResources_sync('publications');
+	constructor(@Inject(Resources) resources) {
+		this.resources = resources;
+		this.allResources = resources.getAllResources_sync();
 		this.scrollbarSize = scrollbarSize();
 		this.showTrashcan = false;
 	}
 
 	async deleteResource(model) {
+		this.showTrashcan = false;
 		try {
-			await request.delete(`/publications/${model.id}`);
-			this.models = this.models.filter(({id}) => id !== model.id);
+			await this.resources.deleteResource(model);
 		} catch (err) {
 			console.dir(err); // TODO: create human readable message for this
 		}

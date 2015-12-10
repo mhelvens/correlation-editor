@@ -6,7 +6,7 @@ import {PublicationBadge}    from './publication-badge.es6.js';
 import {ClinicalIndexBadge}  from './clinical-index-badge.es6.js';
 
 import {DragDropService}           from '../util/drag-drop-service.es6.js';
-import {getResource_sync, request} from '../util/resources.es6.js';
+import {Resources, request}           from '../util/resources.es6.js';
 import {UnderlineSubstringPipe}    from '../util/underline-substring-pipe.es6.js';
 import {EscapeHtmlPipe}            from '../util/escape-html-pipe.es6.js';
 
@@ -122,8 +122,8 @@ export class CorrelationView extends ModelRepresentation {
 	select   = new EventEmitter;
 	dragging = new EventEmitter;
 
-	constructor(@Inject(DragDropService) dd) {
-		super();
+	constructor(@Inject(DragDropService) dd, @Inject(Resources) resources) {
+		super({resources});
 		this.hovering = false;
 		this.dds = dd.sender(this, {
 			resourceKey:   'model',
@@ -145,17 +145,17 @@ export class CorrelationView extends ModelRepresentation {
 							case 'Publication': {
 								await request.post(`/correlations/${this.model.id}`).send({ publication: id });
 								this.model.publication = id;
-								this.publicationModel = getResource_sync('publications', id); // TODO: get directly from 'drop' argument
+								this.publicationModel = this.resources.getResource_sync('publications', id); // TODO: get directly from 'drop' argument
 							} break;
 							case 'ClinicalIndex': {
 								await request.put(`/correlations/${this.model.id}/clinicalIndices/${id}`);
 								this.model.clinicalIndices = [...new Set([...this.model.clinicalIndices, id])];
-								this.clinicalIndexModels = getResource_sync('clinicalIndices', this.model.clinicalIndices); // TODO: get directly from 'drop' argument
+								this.clinicalIndexModels = this.resources.getResource_sync('clinicalIndices', this.model.clinicalIndices); // TODO: get directly from 'drop' argument
 							} break;
 							case 'LocatedMeasure': {
 								await request.put(`/correlations/${this.model.id}/locatedMeasures/${id}`);
 								this.model.locatedMeasures = [...new Set([...this.model.locatedMeasures, id])];
-								this.locatedMeasureModels = getResource_sync('locatedMeasures', this.model.locatedMeasures); // TODO: get directly from 'drop' argument
+								this.locatedMeasureModels = this.resources.getResource_sync('locatedMeasures', this.model.locatedMeasures); // TODO: get directly from 'drop' argument
 							} break;
 						}
 					} catch (err) {
@@ -168,9 +168,9 @@ export class CorrelationView extends ModelRepresentation {
 	}
 
 	onInit() {
-		this.publicationModel     = getResource_sync('publications',    this.model.publication    );
-		this.clinicalIndexModels  = getResource_sync('clinicalIndices', this.model.clinicalIndices);
-		this.locatedMeasureModels = getResource_sync('locatedMeasures', this.model.locatedMeasures);
+		this.publicationModel     = this.resources.getResource_sync('publications',    this.model.publication    );
+		this.clinicalIndexModels  = this.resources.getResource_sync('clinicalIndices', this.model.clinicalIndices);
+		this.locatedMeasureModels = this.resources.getResource_sync('locatedMeasures', this.model.locatedMeasures);
 	}
 
 }

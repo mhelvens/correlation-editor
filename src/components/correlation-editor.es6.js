@@ -22,7 +22,7 @@ export const correlationEditor = `
 			[model-id]  = "  id                             "
 			(dragging)  = " showTrashcan = !!$event         ">
 		</located-measure-badge>
-		<span class="fake-placeholder" *ng-if="!resource.publication && !resource.clinicalIndices.length && !resource.locatedMeasures.length">
+		<span class="fake-placeholder" *ng-if="!resource.publication && !resource.clinicalIndices?.length && !resource.locatedMeasures?.length">
 			 Publication & Correlates
 		</span>
 	</div>

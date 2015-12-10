@@ -4,14 +4,14 @@ import scrollbarSize from 'scrollbar-size';
 
 import {CorrelationView} from './correlation-view.es6.js';
 
-import {getAllResources_sync, getResource_sync, request} from '../util/resources.es6.js';
+import {Resources, request}           from '../util/resources.es6.js';
 import {DeleteTarget}                                    from '../util/delete-target.es6.js';
 import {FieldSubstringPipe}                              from '../util/substring-pipe.es6.js';
 import {GlyphIcon}                                       from '../util/glyph-icon.es6.js';
 
 @Component({
 	selector: 'correlation-list',
-	events: ['select'],
+	events: ['select', 'add'],
 	directives: [
 		NgFor,
 		CorrelationView,
@@ -66,7 +66,7 @@ import {GlyphIcon}                                       from '../util/glyph-ico
 
 		<div class="panel-group" style="margin: 14px">
 			<correlation-view
-				*ng-for               = " #model of models | fieldSubstring : filterText : (hasFilters()?filter:'') : filterFlags "
+				*ng-for               = " #model of allResources['correlations'] | fieldSubstring : filterText : (hasFilters()?filter:'') : filterFlags "
 				[model-id]            = " model.id                                                                                "
 				[highlight]           = " filter                                                                                  "
 				[style.margin-bottom] = " '14px'                                                                                  "
@@ -75,15 +75,27 @@ import {GlyphIcon}                                       from '../util/glyph-ico
 	        </correlation-view>
 		</div>
 
+		<div style="visibility: hidden; height: 34px"></div>
+
+		<button type="button" class="btn btn-default"
+		        style="position: absolute; bottom: 0; left: 1px; border-radius: 0;"
+		        [style.width] = " 'calc(100% - '+scrollbarSize+'px)' "
+		        (click)       = " add.next() ">
+			<span class="glyphicon glyphicon-plus"></span> Add new Correlation
+		</button>
+
 	`,
 	styles: [``]
 })
 export class CorrelationList {
 
 	select = new EventEmitter;
+	add    = new EventEmitter;
 
-	constructor(@Inject(ChangeDetectorRef) ref) {
-		this.models = getAllResources_sync('correlations');
+	constructor(@Inject(ChangeDetectorRef) ref, @Inject(Resources) resources) {
+		this.resources = resources;
+		this.allResources = resources.getAllResources_sync();
+		this.models = resources.getAllResources_sync()['correlations'];
 		this.filterFlags = {
 			byPublication:     true,
 			byClinicalIndices: false,
@@ -100,6 +112,7 @@ export class CorrelationList {
 		}
 		this.scrollbarSize = scrollbarSize();
 		this.showTrashcan = false;
+		this.filterText = this.filterText.bind(this);
 	}
 
 	hasFilters() {
@@ -110,9 +123,9 @@ export class CorrelationList {
 	}
 
 	async deleteResource(model) {
+		this.showTrashcan = false;
 		try {
-			await request.delete(`/correlations/${model.id}`);
-			this.models = this.models.filter(({id}) => id !== model.id);
+			await this.resources.deleteResource(model);
 		} catch (err) {
 			console.dir(err); // TODO: create human readable message for this
 		}
@@ -120,11 +133,11 @@ export class CorrelationList {
 
 	filterText(model, flags) {
 		return [
-			(flags.byComment     ? model.comment                                             : ""),
-			(flags.byPublication ? getResource_sync('publications', model.publication).title : ""),
-			...(flags.byClinicalIndices ? getResource_sync('clinicalIndices', model.clinicalIndices).map(ci=>ci.title||'') : ""),
-			...(flags.byLocatedMeasures ? getResource_sync('locatedMeasures', model.locatedMeasures).map(lm=>lm.quality + ' of ' + (() => {
-				let lt = getResource_sync('lyphTemplates', lm.lyphTemplate);
+			(flags.byComment     ? model.comment                                                            : ""),
+			(flags.byPublication ? this.resources.getResource_sync('publications', model.publication).title : ""),
+			...(flags.byClinicalIndices ? this.resources.getResource_sync('clinicalIndices', model.clinicalIndices).map(ci=>ci.title||'') : ""),
+			...(flags.byLocatedMeasures ? this.resources.getResource_sync('locatedMeasures', model.locatedMeasures).map(lm=>lm.quality + ' of ' + (() => {
+				let lt = this.resources.getResource_sync('lyphTemplates', lm.lyphTemplate);
 				return lt ? lt.name : '';
 			})()) : "")
 		].join('   ');

@@ -4,6 +4,7 @@ import {ModelRepresentation}    from '../util/model-representation.es6.js';
 import {DragDropService}        from '../util/drag-drop-service.es6.js'
 import {UnderlineSubstringPipe} from '../util/underline-substring-pipe.es6.js';
 import {EscapeHtmlPipe}         from '../util/escape-html-pipe.es6.js';
+import {Resources}              from '../util/resources.es6.js';
 
 @Component({
 	selector: 'clinical-index-view',
@@ -46,8 +47,8 @@ export class ClinicalIndexView extends ModelRepresentation {
 	select   = new EventEmitter;
 	dragging = new EventEmitter;
 
-	constructor(@Inject(DragDropService) dd) {
-		super();
+	constructor(@Inject(DragDropService) dd, @Inject(Resources) resources) {
+		super({resources});
 		this.dds = dd.sender(this, {
 			resourceKey:   'model',
 			effectAllowed: 'link',

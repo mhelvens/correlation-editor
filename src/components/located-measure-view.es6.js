@@ -6,7 +6,7 @@ import {ModelRepresentation}       from '../util/model-representation.es6.js';
 import {DragDropService}           from '../util/drag-drop-service.es6.js';
 import {UnderlineSubstringPipe}    from '../util/underline-substring-pipe.es6.js';
 import {EscapeHtmlPipe}            from '../util/escape-html-pipe.es6.js';
-import {getResource_sync, request} from '../util/resources.es6.js';
+import {Resources, request}           from '../util/resources.es6.js';
 
 
 @Component({
@@ -35,11 +35,10 @@ import {getResource_sync, request} from '../util/resources.es6.js';
 			<span [inner-html]="model.quality | escapeHTML | underlineSubstring:highlight"></span>
 			<b>of</b>
 			<lyph-template-badge
-				*ng-if      = " model.lyphTemplate    "
-				[model-id]  = " model.lyphTemplate    "
-				[highlight] = " highlight             "
-				(select)    = " select  .next($event) "
-				(dragging)  = " dragging.next($event) ">
+				*ng-if      = " model.lyphTemplate  "
+				[model-id]  = " model.lyphTemplate  "
+				[highlight] = " highlight           "
+				(select)    = " select.next($event) ">
 			</lyph-template-badge>
 		</div>
 
@@ -58,8 +57,8 @@ export class LocatedMeasureView extends ModelRepresentation {
 	select   = new EventEmitter;
 	dragging = new EventEmitter;
 
-	constructor(@Inject(DragDropService) dd) {
-		super();
+	constructor(@Inject(DragDropService) dd, @Inject(Resources) resources) {
+		super({resources});
 		this.dds = dd.sender(this, {
 			resourceKey:   'model',
 			effectAllowed: 'link',
@@ -88,7 +87,7 @@ export class LocatedMeasureView extends ModelRepresentation {
 	}
 
 	onInit() {
-		this.lyphTemplateModel = getResource_sync('lyphTemplates', this.model.lyphTemplate);
+		this.lyphTemplateModel = this.resources.getResource_sync('lyphTemplates', this.model.lyphTemplate);
 	}
 
 }

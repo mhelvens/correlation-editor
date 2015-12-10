@@ -2,13 +2,13 @@
 
 import './util/polyfills.es6.js';
 
-import {Component, bootstrap} from 'angular2/angular2';
+import {Component, provide, bootstrap} from 'angular2/angular2';
 import $             from 'jquery';
 import scrollbarSize from 'scrollbar-size';
 import GoldenLayout  from './libs/golden-layout.es6.js';
 import                    './libs/bootstrap.es6.js';
 
-import {preloadAllResources} from './util/resources.es6.js';
+import {Resources}           from './util/resources.es6.js';
 import {PublicationList}     from './components/publication-list.es6.js';
 import {ClinicalIndexList}   from './components/clinical-index-list.es6.js';
 import {LocatedMeasureList}  from './components/located-measure-list.es6.js';
@@ -18,12 +18,6 @@ import {ResourceEditor}      from './util/resource-editor.es6.js';
 import {DragDropService}     from './util/drag-drop-service.es6.js';
 
 import './index.scss';
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/* what to inject into the AngularJS 2 Ecosystem */
-const injection = [DragDropService];
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -86,7 +80,7 @@ let [ topLeftPanel , bottomLeftPanel , centerPanel , bottomCenterPanel , topRigh
 /* add fade-out effect for center panel */
 let fadeout = $(`<div style="
 	position:       absolute;
-    bottom:         -1px;
+    bottom:         33px;
     left:            1px;
     height:         60px;
     right:          ${scrollbarSize()-1}px;
@@ -97,12 +91,13 @@ let fadeout = $(`<div style="
 centerPanel.parent().css('overflow', 'hidden');
 centerPanel.scroll(() => {
 	let gap = centerPanel[0].scrollHeight - centerPanel.scrollTop() - centerPanel.height();
-	fadeout.css('bottom', (gap > 60) ? -1 : gap-60);
+	fadeout.css('bottom', (gap > 60) ? 33 : gap-22);
 });
 
 
 /* pre-load all resources */
-await preloadAllResources();
+let resources = new Resources;
+await resources.preloadAllResources();
 
 
 /* AngularJS 2 app component */
@@ -119,16 +114,18 @@ await new Promise((resolve, reject) => {
 				ResourceEditor
 			],
 			template: `
-				<publication-list     (select) = " openEditor($event) "></publication-list>
-				<clinical-index-list  (select) = " openEditor($event) "></clinical-index-list>
-				<located-measure-list (select) = " openEditor($event) "></located-measure-list>
-				<lyph-template-list   (select) = " openEditor($event) "></lyph-template-list>
-				<correlation-list     (select) = " openEditor($event) "></correlation-list>
+
+				<publication-list     (select)="openEditor($event)" (add)="openEditor({ type: 'Publication'    })"></publication-list>
+				<clinical-index-list  (select)="openEditor($event)" (add)="openEditor({ type: 'ClinicalIndex'  })"></clinical-index-list>
+				<located-measure-list (select)="openEditor($event)" (add)="openEditor({ type: 'LocatedMeasure' })"></located-measure-list>
+				<lyph-template-list   (select)="openEditor($event)" (add)="openEditor({ type: 'LyphTemplate'   })"></lyph-template-list>
+				<correlation-list     (select)="openEditor($event)" (add)="openEditor({ type: 'Correlation'    })"></correlation-list>
 
 				<resource-editor
 					(close) = " closeEditor() "
 					[model] = " selectedModel ">
 				</resource-editor>
+
 			`
 		})
 		class App {
@@ -146,7 +143,10 @@ await new Promise((resolve, reject) => {
 			}
 		}
 		$('<app>').appendTo('body');
-		bootstrap(App, injection);
+		bootstrap(App, [
+			DragDropService,
+			provide(Resources, {useValue: resources})
+		]);
 	} catch (err) { reject(err) }
 });
 
