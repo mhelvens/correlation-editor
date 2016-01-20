@@ -1,4 +1,4 @@
-import {NgIf, NgFor, Component, EventEmitter, Inject, ChangeDetectorRef} from 'angular2/angular2';
+import {Component, EventEmitter, ChangeDetectorRef} from 'angular2/core';
 import $             from 'jquery';
 import scrollbarSize from 'scrollbar-size';
 
@@ -14,7 +14,6 @@ import {GlyphIcon}                                       from '../util/glyph-ico
 	selector: 'located-measure-list',
 	events: ['select', 'add'],
 	directives: [
-		NgFor,
 		LocatedMeasureView,
 		DeleteTarget,
 		GlyphIcon
@@ -40,7 +39,6 @@ import {GlyphIcon}                                       from '../util/glyph-ico
 				        placeholder = "Filter Located Measures"
 						(input)     = "filter = $event.target.value"
 						(paste)     = "filter = $event.target.value">
-					</input>
 					<glyph-icon glyph="filter" class="form-control-feedback" color="gray"></glyph-icon>
 				</div>
 				<span class="input-group-btn" data-toggle="buttons">
@@ -54,9 +52,9 @@ import {GlyphIcon}                                       from '../util/glyph-ico
 			<div style="visibility: hidden; height: 34px"></div>
 
 			<located-measure-view
-				*ng-for     = " #model of allResources['locatedMeasures'] | fieldSubstring : filterText : filter : filterFlags "
+				*ngFor     = " #model of allResources['locatedMeasures'] | fieldSubstring : filterText : filter : filterFlags "
 				 class      = " list-group-item                                                       "
-				[model-id]  = " model.id                                                              "
+				[modelId]  = " model.id                                                              "
 				[highlight] = " filter                                                                "
 				(select)    = " select.next($event)                                                   "
 				(dragging)  = " showTrashcan = !!$event                                               ">
@@ -80,14 +78,14 @@ export class LocatedMeasureList {
 	select = new EventEmitter;
 	add    = new EventEmitter;
 
-	constructor(@Inject(ChangeDetectorRef) ref, @Inject(Resources) resources) {
+	constructor(ref: ChangeDetectorRef, resources: Resources) {
 		this.resources = resources;
 		this.allResources = resources.getAllResources_sync();
 		this.models = this.resources.getAllResources_sync()['locatedMeasures'];
 		this.filterFlags = {
 			byLyphTemplate: true
 		};
-		// Can't get [(ng-model)] to work for checkboxes that look like buttons.
+		// Can't get [(ngModel)] to work for checkboxes that look like buttons.
 		// So we're using jquery change detection and have to manually trigger change detection.
 		$(`[name="byLyphTemplate"]`).change(({target:{checked}}) => {
 			this.filterFlags = { ...this.filterFlags, byLyphTemplate: checked };

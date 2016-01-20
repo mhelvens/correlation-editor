@@ -1,4 +1,4 @@
-import {NgIf, NgFor, Component, EventEmitter, Inject} from 'angular2/angular2';
+import {Component, EventEmitter} from 'angular2/core';
 import $       from 'jquery';
 import scrollbarSize from 'scrollbar-size';
 
@@ -14,7 +14,6 @@ import {GlyphIcon}                     from '../util/glyph-icon.es6.js';
 	selector: 'lyph-template-list',
 	events: ['select', 'add'],
 	directives: [
-		NgFor,
 		LyphTemplateView,
 		DeleteTarget,
 		GlyphIcon
@@ -39,16 +38,15 @@ import {GlyphIcon}                     from '../util/glyph-icon.es6.js';
 			        placeholder = "Filter Lyph Templates"
 					(input)     = "filter = $event.target.value"
 					(paste)     = "filter = $event.target.value">
-				</input>
 				<glyph-icon glyph="filter" class="form-control-feedback" color="gray"></glyph-icon>
 			</div>
 
 			<div style="visibility: hidden; height: 34px"></div>
 
 			<lyph-template-view
-				*ng-for     = " #model of allResources['lyphTemplates'] | fieldSubstring:filterText:filter "
+				*ngFor     = " #model of allResources['lyphTemplates'] | fieldSubstring:filterText:filter "
 				 class      = " list-group-item                                     "
-				[model-id]  = " model.id                                            "
+				[modelId]  = " model.id                                            "
 				[highlight] = " filter                                              "
 				(select)    = " select.next($event)                                 "
 				(dragging)  = " showTrashcan = !!$event                             ">
@@ -72,7 +70,7 @@ export class LyphTemplateList {
 	select = new EventEmitter;
 	add    = new EventEmitter;
 
-	constructor(@Inject(Resources) resources) {
+	constructor(resources: Resources) {
 		this.resources = resources;
 		this.allResources = resources.getAllResources_sync();
 		this.models = resources.getAllResources_sync()['lyphTemplates'];

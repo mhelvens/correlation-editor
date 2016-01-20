@@ -1,4 +1,4 @@
-import {NgFor, Component, EventEmitter, Inject, ElementRef} from 'angular2/angular2';
+import {Component, EventEmitter, ElementRef} from 'angular2/core';
 
 import $  from 'jquery';
 
@@ -12,11 +12,11 @@ import $  from 'jquery';
 })
 export class GlyphIcon {
 
-	constructor(@Inject(ElementRef) {nativeElement}) {
+	constructor({nativeElement}: ElementRef) {
 		this.nativeElement = $(nativeElement);
 	}
 
-	onChanges({glyph}) {
+	ngOnChanges({glyph}) {
 		this.nativeElement.addClass(`glyphicon-${glyph.currentValue || 'black'}`);
 	}
 

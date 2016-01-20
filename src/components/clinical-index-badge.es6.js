@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Inject} from 'angular2/angular2';
+import {Component, EventEmitter} from 'angular2/core';
 
 import {ModelRepresentation}    from '../util/model-representation.es6.js';
 import {DragDropService}        from '../util/drag-drop-service.es6.js'
@@ -18,7 +18,7 @@ import {Resources}              from '../util/resources.es6.js';
 	host: {
 		'[class.resource-badge]': `  true                                                                  `,
 		'[title]':                `  model.title || model.uri                                              `,
-		'[inner-html]':           ` (model.title || model.uri) | escapeHTML | underlineSubstring:highlight `,
+		'[innerHtml]':           ` (model.title || model.uri) | escapeHTML | underlineSubstring:highlight `,
 		'(click)':                ` select.next(model); $event.stopPropagation();                          `,
 		...DragDropService.canBeDragged('dds')
 	},
@@ -35,7 +35,7 @@ export class ClinicalIndexBadge extends ModelRepresentation {
 	select   = new EventEmitter;
 	dragging = new EventEmitter;
 
-	constructor(@Inject(DragDropService) dd, @Inject(Resources) resources) {
+	constructor(dd: DragDropService, resources: Resources) {
 		super({resources});
 		this.dds = dd.sender(this, {
 			resourceKey:   'model',

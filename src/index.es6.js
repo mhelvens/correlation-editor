@@ -2,7 +2,8 @@
 
 import './util/polyfills.es6.js';
 
-import {Component, provide, bootstrap} from 'angular2/angular2';
+import {bootstrap}                          from 'angular2/bootstrap';
+import {Component, provide, enableProdMode} from 'angular2/core';
 import $             from 'jquery';
 import scrollbarSize from 'scrollbar-size';
 import GoldenLayout  from './libs/golden-layout.es6.js';
@@ -73,8 +74,8 @@ let layout = new GoldenLayout({
 
 
 /* get the jQuery panel elements */
-let [ topLeftPanel , bottomLeftPanel , centerPanel , bottomCenterPanel , topRightPanel , bottomRightPanel ] = await* layout.components
-/**/('topLeftPanel','bottomLeftPanel','centerPanel','bottomCenterPanel','topRightPanel','bottomRightPanel');
+let [ topLeftPanel , bottomLeftPanel , centerPanel , bottomCenterPanel , topRightPanel , bottomRightPanel ] = await Promise.all(layout.components
+/**/('topLeftPanel','bottomLeftPanel','centerPanel','bottomCenterPanel','topRightPanel','bottomRightPanel'));
 
 
 /* add fade-out effect for center panel */
@@ -129,7 +130,7 @@ await new Promise((resolve, reject) => {
 			`
 		})
 		class App {
-			onInit() { resolve() }
+			ngOnInit() { resolve() }
 			constructor() {
 				this.closeEditor();
 			}
@@ -142,7 +143,10 @@ await new Promise((resolve, reject) => {
 				bottomCenterPanel.data('container').setSize(undefined, 300);
 			}
 		}
+
 		$('<app>').appendTo('body');
+
+		enableProdMode(); // TODO: try to fix all 'errors' caused by dev-mode?
 		bootstrap(App, [
 			DragDropService,
 			provide(Resources, {useValue: resources})

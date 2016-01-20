@@ -1,4 +1,4 @@
-import {NgIf, NgFor, Component, EventEmitter, Inject} from 'angular2/angular2';
+import {Component, EventEmitter} from 'angular2/core';
 
 import {LyphTemplateBadge} from './lyph-template-badge.es6.js';
 
@@ -12,7 +12,6 @@ import {Resources, request}           from '../util/resources.es6.js';
 @Component({
 	selector: 'located-measure-view',
 	directives: [
-		NgIf,
 		LyphTemplateBadge
 	],
 	pipes: [
@@ -32,11 +31,11 @@ import {Resources, request}           from '../util/resources.es6.js';
 
 		<div class="icon icon-LocatedMeasure"></div>
 		<div class="text-content">
-			<span [inner-html]="model.quality | escapeHTML | underlineSubstring:highlight"></span>
+			<span [innerHtml]="model.quality | escapeHTML | underlineSubstring:highlight"></span>
 			<b>of</b>
 			<lyph-template-badge
-				*ng-if      = " model.lyphTemplate  "
-				[model-id]  = " model.lyphTemplate  "
+				*ngIf      = " model.lyphTemplate  "
+				[modelId]  = " model.lyphTemplate  "
 				[highlight] = " highlight           "
 				(select)    = " select.next($event) ">
 			</lyph-template-badge>
@@ -57,7 +56,7 @@ export class LocatedMeasureView extends ModelRepresentation {
 	select   = new EventEmitter;
 	dragging = new EventEmitter;
 
-	constructor(@Inject(DragDropService) dd, @Inject(Resources) resources) {
+	constructor(dd: DragDropService, resources: Resources) {
 		super({resources});
 		this.dds = dd.sender(this, {
 			resourceKey:   'model',
@@ -86,7 +85,7 @@ export class LocatedMeasureView extends ModelRepresentation {
 		});
 	}
 
-	onInit() {
+	ngOnInit() {
 		this.lyphTemplateModel = this.resources.getResource_sync('lyphTemplates', this.model.lyphTemplate);
 	}
 

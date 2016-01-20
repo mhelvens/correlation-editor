@@ -1,7 +1,7 @@
 export const publicationEditor = `
 
-	<input #uri="form" title="URI" required [class.control-has-error]="!uri.valid && uri.touched" ng-control="uri" [(ng-model)]="resource.uri" placeholder="URI" type="text" class="form-control">
+	<input #uri="ngForm" title="URI" required [class.control-has-error]="!uri.valid && uri.touched" ngControl="uri" [(ngModel)]="resource.uri" placeholder="URI" type="text" class="form-control">
 
-	<input #title="form" title="Title" [class.control-has-error]="!title.valid && title.touched" ng-control="title" [(ng-model)]="resource.title" placeholder="Title" type="text" class="form-control">
+	<input #title="ngForm" title="Title" [class.control-has-error]="!title.valid && title.touched" ngControl="title" [(ngModel)]="resource.title" placeholder="Title" type="text" class="form-control">
 
 `;

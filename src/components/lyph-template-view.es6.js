@@ -1,4 +1,4 @@
-import {NgIf, NgFor, Component, EventEmitter, Inject} from 'angular2/angular2';
+import {Component, EventEmitter} from 'angular2/core';
 
 import {ModelRepresentation}    from '../util/model-representation.es6.js';
 import {DragDropService}        from '../util/drag-drop-service.es6.js'
@@ -24,7 +24,7 @@ import {Resources}              from '../util/resources.es6.js';
 	template: `
 
 		<div class="icon icon-LyphTemplate"></div>
-		<div class="text-content" [inner-html]="model.name | escapeHTML | underlineSubstring:highlight"></div>
+		<div class="text-content" [innerHtml]="model.name | escapeHTML | underlineSubstring:highlight"></div>
 
 	`,
 	styles: [`
@@ -45,7 +45,7 @@ export class LyphTemplateView extends ModelRepresentation {
 	select   = new EventEmitter;
 	dragging = new EventEmitter;
 
-	constructor(@Inject(DragDropService) dd, @Inject(Resources) resources) {
+	constructor(dd: DragDropService, resources: Resources) {
 		super({resources});
 		this.dds = dd.sender(this, {
 			resourceKey:   'model',

@@ -4,10 +4,9 @@ export class ModelRepresentation {
 	constructor({resources}) {
 		this.resources = resources;
 	}
-	onChanges({modelId}) {
+	ngOnChanges({modelId}) {
 		if (modelId) {
 			this.model = this.resources.getResource_sync(this.constructor.endpoint, modelId.currentValue);
-
 			if (!this.model) {
 				console.dir(modelId);
 			}

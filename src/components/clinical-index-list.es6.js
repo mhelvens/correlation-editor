@@ -1,4 +1,4 @@
-import {NgFor, Component, EventEmitter, Inject} from 'angular2/angular2';
+import {Component, EventEmitter} from 'angular2/core';
 
 import scrollbarSize from 'scrollbar-size';
 
@@ -13,7 +13,6 @@ import {GlyphIcon}                     from '../util/glyph-icon.es6.js';
 	selector: 'clinical-index-list',
 	events: ['select', 'add'],
 	directives: [
-		NgFor,
 		ClinicalIndexView,
 		DeleteTarget,
 		GlyphIcon
@@ -40,16 +39,15 @@ import {GlyphIcon}                     from '../util/glyph-icon.es6.js';
 			        placeholder = "Filter Clinical Indices"
 					(input)     = "filter = $event.target.value"
 					(paste)     = "filter = $event.target.value">
-				</input>
 				<glyph-icon glyph="filter" class="form-control-feedback" color="gray"></glyph-icon>
 			</div>
 
 			<div style="visibility: hidden; height: 34px"></div>
 
 			<clinical-index-view
-				*ng-for     = " #model of allResources['clinicalIndices'] | fieldSubstring:filterText:filter "
+				*ngFor     = " #model of allResources['clinicalIndices'] | fieldSubstring:filterText:filter "
 			     class      = " list-group-item                                     "
-			    [model-id]  = " model.id                                            "
+			    [modelId]  = " model.id                                            "
 			    [highlight] = " filter                                              "
 			    (select)    = " select.next($event)                                 "
 			    (dragging)  = " showTrashcan = !!$event                             ">
@@ -73,7 +71,7 @@ export class ClinicalIndexList {
 	select = new EventEmitter;
 	add    = new EventEmitter;
 
-	constructor(@Inject(Resources) resources) {
+	constructor(resources: Resources) {
 		this.resources = resources;
 		this.allResources = resources.getAllResources_sync();
 		this.models = resources.getAllResources_sync()['clinicalIndices'];

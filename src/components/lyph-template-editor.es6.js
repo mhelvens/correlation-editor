@@ -1,5 +1,5 @@
 export const lyphTemplateEditor = `
 
-	<input #name="form" title="Name" required [class.control-has-error]="!name.valid && name.touched" ng-control="name" [(ng-model)]="resource.name" placeholder="Name" required type="text" class="form-control">
+	<input #name="ngForm" title="Name" required [class.control-has-error]="!name.valid && name.touched" ngControl="name" [(ngModel)]="resource.name" placeholder="Name" required type="text" class="form-control">
 
 `;

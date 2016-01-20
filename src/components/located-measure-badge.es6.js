@@ -1,10 +1,10 @@
-import {Component, EventEmitter, Inject} from 'angular2/angular2';
+import {Component, EventEmitter} from 'angular2/core';
 
 import {ModelRepresentation}    from '../util/model-representation.es6.js';
 import {DragDropService}        from '../util/drag-drop-service.es6.js';
 import {UnderlineSubstringPipe} from '../util/underline-substring-pipe.es6.js';
 import {EscapeHtmlPipe}         from '../util/escape-html-pipe.es6.js';
-import {Resources}           from '../util/resources.es6.js';
+import {Resources}              from '../util/resources.es6.js';
 
 @Component({
 	selector: 'located-measure-badge',
@@ -22,9 +22,9 @@ import {Resources}           from '../util/resources.es6.js';
 	],
 	template: `
 
-		<span [inner-html]="model.quality            | escapeHTML | underlineSubstring:highlight"></span>
+		<span [innerHtml]="model.quality            | escapeHTML | underlineSubstring:highlight"></span>
 		<span style="font-weight: normal">of</span>
-		<span [inner-html]="lyphTemplateModel().name | escapeHTML | underlineSubstring:highlight"></span>
+		<span [innerHtml]="lyphTemplateModel().name | escapeHTML | underlineSubstring:highlight"></span>
 
 	`,
 	styles: [`
@@ -39,7 +39,7 @@ export class LocatedMeasureBadge extends ModelRepresentation {
 	select   = new EventEmitter;
 	dragging = new EventEmitter;
 
-	constructor(@Inject(DragDropService) dd, @Inject(Resources) resources) {
+	constructor(dd: DragDropService, resources: Resources) {
 		super({resources});
 		this.dds = dd.sender(this, {
 			resourceKey:   'model',

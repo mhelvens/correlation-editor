@@ -1,4 +1,4 @@
-import {NgIf, NgFor, Component, EventEmitter, Inject, ElementRef} from 'angular2/angular2';
+import {Component, EventEmitter, ElementRef} from 'angular2/core';
 import $ from 'jquery';
 
 import {DragDropService} from '../util/drag-drop-service.es6.js'
@@ -57,8 +57,8 @@ export class DeleteTarget {
 	catch = new EventEmitter;
 
 	constructor(
-		@Inject(ElementRef)      {nativeElement},
-		@Inject(DragDropService) dd
+		{nativeElement}: ElementRef,
+		dd: DragDropService
 	) {
 		this.nativeElement = $(nativeElement);
 		this.show          = false;
@@ -78,7 +78,7 @@ export class DeleteTarget {
 		this._hideCb = () => { this.nativeElement.css('visibility', 'hidden') };
 	}
 
-	onChanges({show}) {
+	ngOnChanges({show}) {
 		if (show) {
 			if (show.currentValue) {
 				this.nativeElement.css('visibility', 'visible');

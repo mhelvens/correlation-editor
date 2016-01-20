@@ -1,4 +1,4 @@
-import {NgIf, NgFor, Component, EventEmitter, Inject} from 'angular2/angular2';
+import {Component, EventEmitter} from 'angular2/core';
 
 import {ModelRepresentation} from '../util/model-representation.es6.js';
 import {LocatedMeasureBadge} from './located-measure-badge.es6.js';
@@ -40,7 +40,7 @@ import {EscapeHtmlPipe}            from '../util/escape-html-pipe.es6.js';
 					Correlation
 				</div>
 				<a data-toggle="collapse" href="#collapse-{{ model.id }}" class="collapsed" style="display: block; text-decoration: none; cursor: pointer; flex-grow: 0">
-					<span *ng-if="model.comment" class="comment-indicator">
+					<span *ngIf="model.comment" class="comment-indicator">
 						comment
 						<span class="glyphicon glyphicon-chevron-right"></span>
 						<span class="glyphicon glyphicon-chevron-down"></span>
@@ -48,27 +48,27 @@ import {EscapeHtmlPipe}            from '../util/escape-html-pipe.es6.js';
 				</a>
 			</h4>
 		</div>
-		<div *ng-if="model.comment" id="collapse-{{ model.id }}" class="panel-collapse collapse">
-			<div class="panel-body" [inner-html]="model.comment | escapeHTML | underlineSubstring:highlight"></div>
+		<div *ngIf="model.comment" id="collapse-{{ model.id }}" class="panel-collapse collapse">
+			<div class="panel-body" [innerHtml]="model.comment | escapeHTML | underlineSubstring:highlight"></div>
 		</div>
 		<div class="panel-footer" [class.no-comment]="!model.comment">
 			<publication-badge
-				*ng-if      = " model.publication     "
-				[model-id]  = " model.publication     "
+				*ngIf      = " model.publication     "
+				[modelId]  = " model.publication     "
 				[highlight] = " highlight             "
 				(select)    = " select.next($event)   "
 				(dragging)  = " dragging.next($event) ">
 			</publication-badge><!--
 			--><clinical-index-badge
-				*ng-for     = " #id of model.clinicalIndices "
-				[model-id]  = " id                           "
+				*ngFor     = " #id of model.clinicalIndices "
+				[modelId]  = " id                           "
 				[highlight] = " highlight                    "
 				(select)    = " select.next($event)          "
 				(dragging)  = " dragging.next($event)        ">
 			</clinical-index-badge><!--
 			--><located-measure-badge
-				*ng-for     = " #id of model.locatedMeasures "
-				[model-id]  = " id                           "
+				*ngFor     = " #id of model.locatedMeasures "
+				[modelId]  = " id                           "
 				[highlight] = " highlight                    "
 				(select)    = " select.next($event)          "
 				(dragging)  = " dragging.next($event)        ">
@@ -122,7 +122,7 @@ export class CorrelationView extends ModelRepresentation {
 	select   = new EventEmitter;
 	dragging = new EventEmitter;
 
-	constructor(@Inject(DragDropService) dd, @Inject(Resources) resources) {
+	constructor(dd: DragDropService, resources: Resources) {
 		super({resources});
 		this.hovering = false;
 		this.dds = dd.sender(this, {
@@ -167,7 +167,7 @@ export class CorrelationView extends ModelRepresentation {
 		});
 	}
 
-	onInit() {
+	ngOnInit() {
 		this.publicationModel     = this.resources.getResource_sync('publications',    this.model.publication    );
 		this.clinicalIndexModels  = this.resources.getResource_sync('clinicalIndices', this.model.clinicalIndices);
 		this.locatedMeasureModels = this.resources.getResource_sync('locatedMeasures', this.model.locatedMeasures);

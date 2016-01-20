@@ -1,4 +1,5 @@
-export const request = require('../libs/superagent.es6.js');
+import superAgent from '../libs/superagent.es6.js';
+export const request = superAgent;
 import {sw} from '../util/misc.es6.js';
 
 request.basePath = 'http://localhost:8888';

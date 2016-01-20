@@ -1,4 +1,5 @@
-import {NgSwitch, FORM_DIRECTIVES, Component, EventEmitter, Inject} from 'angular2/angular2';
+import {FORM_DIRECTIVES}         from 'angular2/common';
+import {Component, EventEmitter} from 'angular2/core';
 import scrollbarSize from 'scrollbar-size';
 
 import {clinicalIndexEditor}  from '../components/clinical-index-editor.es6.js';
@@ -34,7 +35,6 @@ const META_PROPERTIES = ['id', 'key'];
 		EscapeHtmlPipe          // https://github.com/angular/angular/issues/5388
 	],
 	directives: [
-		NgSwitch,
 		FORM_DIRECTIVES,
 		LyphTemplateBadge,
 		PublicationBadge,
@@ -44,7 +44,7 @@ const META_PROPERTIES = ['id', 'key'];
 	],
 	template: `
 
-		<form *ng-if="model" #form="form" (submit)="submit.next(form.value)">
+		<form *ngIf="model" #form="ngForm" (submit)="submit.next(form.value)">
 
 			<header  class        = " navbar navbar-default                "
 				    [style.width] = " 'calc(100% - '+(scrollbarSize)+'px)' ">
@@ -84,12 +84,12 @@ const META_PROPERTIES = ['id', 'key'];
 
 			<div style="visibility: hidden; height: 50px"></div>
 
-			<div class="control-container" [ng-switch]="model.type">
-				<template ng-switch-when="ClinicalIndex" >${clinicalIndexEditor} </template>
-				<template ng-switch-when="Publication"   >${publicationEditor}   </template>
-				<template ng-switch-when="LyphTemplate"  >${lyphTemplateEditor}  </template>
-				<template ng-switch-when="LocatedMeasure">${locatedMeasureEditor}</template>
-				<template ng-switch-when="Correlation"   >${correlationEditor}   </template>
+			<div class="control-container" [ngSwitch]="model.type">
+				<template ngSwitchWhen="ClinicalIndex" >${clinicalIndexEditor} </template>
+				<template ngSwitchWhen="Publication"   >${publicationEditor}   </template>
+				<template ngSwitchWhen="LyphTemplate"  >${lyphTemplateEditor}  </template>
+				<template ngSwitchWhen="LocatedMeasure">${locatedMeasureEditor}</template>
+				<template ngSwitchWhen="Correlation"   >${correlationEditor}   </template>
 			</div>
 
 		</form>
@@ -176,7 +176,7 @@ export class ResourceEditor {
 	scrollbarSize = scrollbarSize();
 
 
-	constructor(@Inject(DragDropService) dd, @Inject(Resources) resources) {
+	constructor(dd: DragDropService, resources: Resources) {
 		this.resources = resources;
 
 		/* drag/drop recipient for correlation editor */
@@ -239,7 +239,7 @@ export class ResourceEditor {
 		return true;
 	}
 
-	onChanges({model}) {
+	ngOnChanges({model}) {
 		if (model) {
 			this.resource = { ...model.currentValue };
 			for (let key of META_PROPERTIES) { delete this.resource[key] }

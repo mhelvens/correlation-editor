@@ -1,4 +1,4 @@
-import {NgIf, NgFor, Component, EventEmitter, Inject, ChangeDetectorRef} from 'angular2/angular2';
+import {Component, EventEmitter, ChangeDetectorRef} from 'angular2/core';
 import $             from 'jquery';
 import scrollbarSize from 'scrollbar-size';
 
@@ -13,7 +13,6 @@ import {GlyphIcon}                                       from '../util/glyph-ico
 	selector: 'correlation-list',
 	events: ['select', 'add'],
 	directives: [
-		NgFor,
 		CorrelationView,
 		DeleteTarget,
 		GlyphIcon
@@ -39,7 +38,6 @@ import {GlyphIcon}                                       from '../util/glyph-ico
 					[disabled]  = "!hasFilters()"
 					(input)     = "filter = $event.target.value"
 					(paste)     = "filter = $event.target.value">
-				</input>
 				<glyph-icon glyph="filter" class="form-control-feedback" color="gray"></glyph-icon>
 			</div>
 			<span class="input-group-btn" data-toggle="buttons">
@@ -66,8 +64,8 @@ import {GlyphIcon}                                       from '../util/glyph-ico
 
 		<div class="panel-group" style="margin: 14px">
 			<correlation-view
-				*ng-for               = " #model of allResources['correlations'] | fieldSubstring : filterText : (hasFilters()?filter:'') : filterFlags "
-				[model-id]            = " model.id                                                                                "
+				*ngFor               = " #model of allResources['correlations'] | fieldSubstring : filterText : (hasFilters()?filter:'') : filterFlags "
+				[modelId]            = " model.id                                                                                "
 				[highlight]           = " filter                                                                                  "
 				[style.margin-bottom] = " '14px'                                                                                  "
 				(select)              = " select.next($event)                                                                     "
@@ -92,7 +90,7 @@ export class CorrelationList {
 	select = new EventEmitter;
 	add    = new EventEmitter;
 
-	constructor(@Inject(ChangeDetectorRef) ref, @Inject(Resources) resources) {
+	constructor(ref: ChangeDetectorRef, resources: Resources) {
 		this.resources = resources;
 		this.allResources = resources.getAllResources_sync();
 		this.models = resources.getAllResources_sync()['correlations'];
@@ -102,7 +100,7 @@ export class CorrelationList {
 			byLocatedMeasures: false,
 			byComment:         false
 		};
-		// Can't get [(ng-model)] to work for checkboxes that look like buttons.
+		// Can't get [(ngModel)] to work for checkboxes that look like buttons.
 		// So we're using jquery change detection and have to manually trigger change detection.
 		for (let flag of Object.keys(this.filterFlags)) {
 			$(`[name="${flag}"]`).change(({target:{checked}}) => {

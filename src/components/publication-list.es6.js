@@ -1,4 +1,4 @@
-import {NgIf, NgFor, Component, EventEmitter, Inject} from 'angular2/angular2';
+import {Component, EventEmitter, Inject} from 'angular2/core';
 import scrollbarSize from 'scrollbar-size';
 
 import {Resources, request}           from '../util/resources.es6.js';
@@ -13,7 +13,6 @@ import {PublicationView} from './publication-view.es6.js';
 	selector: 'publication-list',
 	events: ['select', 'add'],
 	directives: [
-		NgFor,
 		PublicationView,
 		DeleteTarget,
 		GlyphIcon
@@ -38,16 +37,15 @@ import {PublicationView} from './publication-view.es6.js';
 			        placeholder = "Filter Publications"
 					(input)     = "filter = $event.target.value"
 					(paste)     = "filter = $event.target.value">
-				</input>
 				<glyph-icon glyph="filter" class="form-control-feedback" color="gray"></glyph-icon>
 			</div>
 
 			<div style="visibility: hidden; height: 34px"></div>
 
 			<publication-view
-				*ng-for     = " #model of allResources['publications'] | fieldSubstring:filterText:filter "
+				*ngFor     = " #model of allResources['publications'] | fieldSubstring:filterText:filter "
 				 class      = " list-group-item                                     "
-				[model-id]  = " model.id                                            "
+				[modelId]  = " model.id                                            "
 				[highlight] = " filter                                              "
 				(select)    = " select.next($event)                                 "
 				(dragging)  = " showTrashcan = !!$event                             ">
@@ -71,7 +69,7 @@ export class PublicationList {
 	select = new EventEmitter;
 	add    = new EventEmitter;
 
-	constructor(@Inject(Resources) resources) {
+	constructor(resources: Resources) {
 		this.resources = resources;
 		this.allResources = resources.getAllResources_sync();
 		this.scrollbarSize = scrollbarSize();
