@@ -19,11 +19,11 @@ import {Resources, request}           from '../util/resources.es6.js';
 		EscapeHtmlPipe
 	],
 	inputs: ['modelId', 'highlight'],
-	events: ['select', 'dragging'],
+	events: ['choose', 'dragging'],
 	host: {
 		'[class.resource-view]': ` true                                            `,
 		'[title]':               ` model.quality + ' of ' + lyphTemplateModel.name `,
-		'(click)':               ` select.next(model)                              `,
+		'(click)':               ` choose.next({event: $event, model: model})                              `,
 		...DragDropService.canBeDragged('dds'),
 		...DragDropService.acceptsDrop ('ddr')
 	},
@@ -37,7 +37,7 @@ import {Resources, request}           from '../util/resources.es6.js';
 				*ngIf      = " model.lyphTemplate  "
 				[modelId]  = " model.lyphTemplate  "
 				[highlight] = " highlight           "
-				(select)    = " select.next($event) ">
+				(choose)    = " choose.next($event) ">
 			</lyph-template-badge>
 		</div>
 
@@ -53,7 +53,7 @@ export class LocatedMeasureView extends ModelRepresentation {
 
 	static endpoint = 'locatedMeasures';
 
-	select   = new EventEmitter;
+	choose   = new EventEmitter;
 	dragging = new EventEmitter;
 
 	constructor(dd: DragDropService, resources: Resources) {

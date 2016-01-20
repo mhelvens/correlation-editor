@@ -10,7 +10,7 @@ import {Resources}              from '../util/resources.es6.js';
 @Component({
 	selector: 'clinical-index-badge',
 	inputs:   ['modelId', 'highlight'],
-	events:   ['select', 'dragging'],
+	events:   ['choose', 'dragging'],
 	pipes: [
 		UnderlineSubstringPipe,
 		EscapeHtmlPipe
@@ -18,8 +18,8 @@ import {Resources}              from '../util/resources.es6.js';
 	host: {
 		'[class.resource-badge]': `  true                                                                  `,
 		'[title]':                `  model.title || model.uri                                              `,
-		'[innerHtml]':           ` (model.title || model.uri) | escapeHTML | underlineSubstring:highlight `,
-		'(click)':                ` select.next(model); $event.stopPropagation();                          `,
+		'[innerHtml]':            ` (model.title || model.uri) | escapeHTML | underlineSubstring:highlight `,
+		'(click)':                ` choose.next({event: $event, model: model}); $event.stopPropagation();                          `,
 		...DragDropService.canBeDragged('dds')
 	},
 	template: ``,
@@ -32,7 +32,7 @@ export class ClinicalIndexBadge extends ModelRepresentation {
 
 	static endpoint = 'clinicalIndices';
 
-	select   = new EventEmitter;
+	choose   = new EventEmitter;
 	dragging = new EventEmitter;
 
 	constructor(dd: DragDropService, resources: Resources) {

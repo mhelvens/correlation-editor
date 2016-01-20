@@ -14,11 +14,11 @@ import {Resources}              from '../util/resources.es6.js';
 		EscapeHtmlPipe
 	],
 	inputs: ['modelId', 'highlight'],
-	events: ['select', 'dragging'],
+	events: ['choose', 'dragging'],
 	host: {
 		'[class.resource-view]': ` true                     `,
 		'[title]':               ` model.title || model.uri `,
-		'(click)':               ` select.next(model)       `,
+		'(click)':               ` choose.next({event: $event, model: model})       `,
 		...DragDropService.canBeDragged('dds')
 	},
 	template: `
@@ -42,7 +42,7 @@ export class ClinicalIndexView extends ModelRepresentation {
 
 	static endpoint = 'clinicalIndices';
 
-	select   = new EventEmitter;
+	choose   = new EventEmitter;
 	dragging = new EventEmitter;
 
 	constructor(dd: DragDropService, resources: Resources) {

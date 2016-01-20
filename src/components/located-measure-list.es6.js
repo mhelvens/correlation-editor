@@ -12,7 +12,7 @@ import {GlyphIcon}                                       from '../util/glyph-ico
 
 @Component({
 	selector: 'located-measure-list',
-	events: ['select', 'add'],
+	events: ['choose', 'add'],
 	directives: [
 		LocatedMeasureView,
 		DeleteTarget,
@@ -39,7 +39,7 @@ import {GlyphIcon}                                       from '../util/glyph-ico
 				        placeholder = "Filter Located Measures"
 						(input)     = "filter = $event.target.value"
 						(paste)     = "filter = $event.target.value">
-					<glyph-icon glyph="filter" class="form-control-feedback" color="gray"></glyph-icon>
+				<span class="form-control-feedback" style="font-size: 10px; color: gray; width: auto; margin-right: 8px;">{{(allResources['locatedMeasures'] | fieldSubstring:filterText:filter:filterFlags).length}} / {{allResources['locatedMeasures'].length}}</span>
 				</div>
 				<span class="input-group-btn" data-toggle="buttons">
 					<label class="btn btn-default" [class.active]="filterFlags.byLyphTemplate" style="height: 34px; border-radius: 0;" title="Filter by Lyph Template">
@@ -52,11 +52,11 @@ import {GlyphIcon}                                       from '../util/glyph-ico
 			<div style="visibility: hidden; height: 34px"></div>
 
 			<located-measure-view
-				*ngFor     = " #model of allResources['locatedMeasures'] | fieldSubstring : filterText : filter : filterFlags "
+				*ngFor     = " #model of allResources['locatedMeasures'] | fieldSubstring:filterText:filter:filterFlags "
 				 class      = " list-group-item                                                       "
 				[modelId]  = " model.id                                                              "
 				[highlight] = " filter                                                                "
-				(select)    = " select.next($event)                                                   "
+				(choose)    = " choose.next($event)                                                   "
 				(dragging)  = " showTrashcan = !!$event                                               ">
 	        </located-measure-view>
 
@@ -75,7 +75,7 @@ import {GlyphIcon}                                       from '../util/glyph-ico
 })
 export class LocatedMeasureList {
 
-	select = new EventEmitter;
+	choose = new EventEmitter;
 	add    = new EventEmitter;
 
 	constructor(ref: ChangeDetectorRef, resources: Resources) {

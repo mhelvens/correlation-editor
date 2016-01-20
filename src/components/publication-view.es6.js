@@ -14,17 +14,17 @@ import {Resources}              from '../util/resources.es6.js';
 		EscapeHtmlPipe
 	],
 	inputs: ['modelId', 'highlight'],
-	events: ['select', 'dragging'],
+	events: ['choose', 'dragging'],
 	host: {
-		'[class.resource-view]': ` true                             `,
-		'[title]':               ` model?.title || model?.uri || '' `,
-		'(click)':               ` select.next(model)               `,
+		'[class.resource-view]': ` true               `,
+		'[title]':               ` compositeTitle     `,
+		'(click)':               ` choose.next({event: $event, model: model}) `,
 		...DragDropService.canBeDragged('dds')
 	},
 	template: `
 
 		<div class="icon icon-Publication"></div>
-		<div class="text-content" [innerHtml]="(model.title || model.uri || '') | escapeHTML | underlineSubstring:highlight"></div>
+		<div class="text-content" [innerHtml]="compositeTitle | escapeHTML | underlineSubstring:highlight"></div>
 		<a *ngIf = "uriIsUrl()"
 		   class  = "link glyphicon glyphicon-new-window"
 		   [href] = "model.uri"
@@ -46,7 +46,7 @@ export class PublicationView extends ModelRepresentation {
 
 	static endpoint = 'publications';
 
-	select   = new EventEmitter;
+	choose   = new EventEmitter;
 	dragging = new EventEmitter;
 
 	constructor(dd: DragDropService, resources: Resources) {
@@ -57,6 +57,17 @@ export class PublicationView extends ModelRepresentation {
 			dragstart() { this.dragging.next(this.model); return false; },
 			dragend()   { this.dragging.next(null);       return false; }
 		});
+	}
+
+	get compositeTitle() {
+		if (!this.model)       { return "" }
+		if (!this.model.title) { return this.model.uri }
+
+		/* extract pubmed-id if applicable */
+		let match = this.model.uri.match(/^https?\:\/\/www\.ncbi\.nlm\.nih\.gov\/pubmed\/\?term\=(\w+)/);
+		if (match) { return `${this.model.title} (${match[1]})` }
+
+		return this.model.title;
 	}
 
 	uriIsUrl() { return /^https?\:\/\//.test(this.model ? this.model.uri : '') }

@@ -12,7 +12,7 @@ import {EscapeHtmlPipe}            from '../util/escape-html-pipe.es6.js';
 
 @Component({
 	selector: 'correlation-view',
-	events: ['select', 'dragging'],
+	events: ['choose', 'dragging'],
 	inputs: ['modelId', 'highlight'],
 	host: {
 		'[class.panel]':         ' true     ',
@@ -35,7 +35,7 @@ import {EscapeHtmlPipe}            from '../util/escape-html-pipe.es6.js';
 
 		<div class="panel-heading" [class.no-comment]="!model.comment">
 			<h4 class="panel-title" style="font-weight: bold; display: flex; align-content: center; align-items: center;">
-				<div (click)="select.next(model)" (mouseover)="hovering = true" (mouseout)="hovering = false" style="flex-grow: 1">
+				<div (click)="choose.next({event: $event, model: model})" (mouseover)="hovering = true" (mouseout)="hovering = false" style="flex-grow: 1">
 					<span class="icon icon-Correlation" style="margin-right: 0"></span>&nbsp;
 					Correlation
 				</div>
@@ -56,21 +56,21 @@ import {EscapeHtmlPipe}            from '../util/escape-html-pipe.es6.js';
 				*ngIf      = " model.publication     "
 				[modelId]  = " model.publication     "
 				[highlight] = " highlight             "
-				(select)    = " select.next($event)   "
+				(choose)    = " choose.next($event)   "
 				(dragging)  = " dragging.next($event) ">
 			</publication-badge><!--
 			--><clinical-index-badge
 				*ngFor     = " #id of model.clinicalIndices "
 				[modelId]  = " id                           "
 				[highlight] = " highlight                    "
-				(select)    = " select.next($event)          "
+				(choose)    = " choose.next($event)          "
 				(dragging)  = " dragging.next($event)        ">
 			</clinical-index-badge><!--
 			--><located-measure-badge
 				*ngFor     = " #id of model.locatedMeasures "
 				[modelId]  = " id                           "
 				[highlight] = " highlight                    "
-				(select)    = " select.next($event)          "
+				(choose)    = " choose.next($event)          "
 				(dragging)  = " dragging.next($event)        ">
 			</located-measure-badge>
 		</div>
@@ -119,7 +119,7 @@ export class CorrelationView extends ModelRepresentation {
 
 	static endpoint = 'correlations';
 
-	select   = new EventEmitter;
+	choose   = new EventEmitter;
 	dragging = new EventEmitter;
 
 	constructor(dd: DragDropService, resources: Resources) {

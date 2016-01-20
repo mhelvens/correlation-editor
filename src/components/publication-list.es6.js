@@ -11,7 +11,7 @@ import {PublicationView} from './publication-view.es6.js';
 
 @Component({
 	selector: 'publication-list',
-	events: ['select', 'add'],
+	events: ['choose', 'add'],
 	directives: [
 		PublicationView,
 		DeleteTarget,
@@ -37,7 +37,7 @@ import {PublicationView} from './publication-view.es6.js';
 			        placeholder = "Filter Publications"
 					(input)     = "filter = $event.target.value"
 					(paste)     = "filter = $event.target.value">
-				<glyph-icon glyph="filter" class="form-control-feedback" color="gray"></glyph-icon>
+				<span class="form-control-feedback" style="font-size: 10px; color: gray; width: auto; margin-right: 8px;">{{(allResources['publications'] | fieldSubstring:filterText:filter).length}} / {{allResources['publications'].length}}</span>
 			</div>
 
 			<div style="visibility: hidden; height: 34px"></div>
@@ -47,7 +47,7 @@ import {PublicationView} from './publication-view.es6.js';
 				 class      = " list-group-item                                     "
 				[modelId]  = " model.id                                            "
 				[highlight] = " filter                                              "
-				(select)    = " select.next($event)                                 "
+				(choose)    = " choose.next($event)                                 "
 				(dragging)  = " showTrashcan = !!$event                             ">
 	        </publication-view>
 
@@ -66,7 +66,7 @@ import {PublicationView} from './publication-view.es6.js';
 })
 export class PublicationList {
 
-	select = new EventEmitter;
+	choose = new EventEmitter;
 	add    = new EventEmitter;
 
 	constructor(resources: Resources) {
@@ -85,6 +85,15 @@ export class PublicationList {
 		}
 	}
 
-	filterText(model) { return model.title }
+	filterText(model) {
+		if (!model)       { return "" }
+		if (!model.title) { return model.uri }
+
+		/* extract pubmed-id if applicable */
+		let match = model.uri.match(/^https?\:\/\/www\.ncbi\.nlm\.nih\.gov\/pubmed\/\?term\=(\w+)/);
+		if (match) { return `${model.title} (${match[1]})` }
+
+		return model.title;
+	}
 
 }

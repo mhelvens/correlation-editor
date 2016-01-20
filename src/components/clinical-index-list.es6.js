@@ -11,7 +11,7 @@ import {GlyphIcon}                     from '../util/glyph-icon.es6.js';
 
 @Component({
 	selector: 'clinical-index-list',
-	events: ['select', 'add'],
+	events: ['choose', 'add'],
 	directives: [
 		ClinicalIndexView,
 		DeleteTarget,
@@ -39,7 +39,7 @@ import {GlyphIcon}                     from '../util/glyph-icon.es6.js';
 			        placeholder = "Filter Clinical Indices"
 					(input)     = "filter = $event.target.value"
 					(paste)     = "filter = $event.target.value">
-				<glyph-icon glyph="filter" class="form-control-feedback" color="gray"></glyph-icon>
+				<span class="form-control-feedback" style="font-size: 10px; color: gray; width: auto; margin-right: 8px;">{{(allResources['clinicalIndices'] | fieldSubstring:filterText:filter).length}} / {{allResources['clinicalIndices'].length}}</span>
 			</div>
 
 			<div style="visibility: hidden; height: 34px"></div>
@@ -49,7 +49,7 @@ import {GlyphIcon}                     from '../util/glyph-icon.es6.js';
 			     class      = " list-group-item                                     "
 			    [modelId]  = " model.id                                            "
 			    [highlight] = " filter                                              "
-			    (select)    = " select.next($event)                                 "
+			    (choose)    = " choose.next($event)                                 "
 			    (dragging)  = " showTrashcan = !!$event                             ">
 	        </clinical-index-view>
 
@@ -68,7 +68,7 @@ import {GlyphIcon}                     from '../util/glyph-icon.es6.js';
 })
 export class ClinicalIndexList {
 
-	select = new EventEmitter;
+	choose = new EventEmitter;
 	add    = new EventEmitter;
 
 	constructor(resources: Resources) {

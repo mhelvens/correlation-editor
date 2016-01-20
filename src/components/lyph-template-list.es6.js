@@ -12,7 +12,7 @@ import {GlyphIcon}                     from '../util/glyph-icon.es6.js';
 
 @Component({
 	selector: 'lyph-template-list',
-	events: ['select', 'add'],
+	events: ['choose', 'add'],
 	directives: [
 		LyphTemplateView,
 		DeleteTarget,
@@ -38,7 +38,7 @@ import {GlyphIcon}                     from '../util/glyph-icon.es6.js';
 			        placeholder = "Filter Lyph Templates"
 					(input)     = "filter = $event.target.value"
 					(paste)     = "filter = $event.target.value">
-				<glyph-icon glyph="filter" class="form-control-feedback" color="gray"></glyph-icon>
+				<span class="form-control-feedback" style="font-size: 10px; color: gray; width: auto; margin-right: 8px;">{{(allResources['lyphTemplates'] | fieldSubstring:filterText:filter).length}} / {{allResources['lyphTemplates'].length}}</span>
 			</div>
 
 			<div style="visibility: hidden; height: 34px"></div>
@@ -48,7 +48,7 @@ import {GlyphIcon}                     from '../util/glyph-icon.es6.js';
 				 class      = " list-group-item                                     "
 				[modelId]  = " model.id                                            "
 				[highlight] = " filter                                              "
-				(select)    = " select.next($event)                                 "
+				(choose)    = " choose.next($event)                                 "
 				(dragging)  = " showTrashcan = !!$event                             ">
 	        </lyph-template-view>
 
@@ -67,7 +67,7 @@ import {GlyphIcon}                     from '../util/glyph-icon.es6.js';
 })
 export class LyphTemplateList {
 
-	select = new EventEmitter;
+	choose = new EventEmitter;
 	add    = new EventEmitter;
 
 	constructor(resources: Resources) {

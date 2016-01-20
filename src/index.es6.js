@@ -116,11 +116,11 @@ await new Promise((resolve, reject) => {
 			],
 			template: `
 
-				<publication-list     (select)="openEditor($event)" (add)="openEditor({ type: 'Publication'    })"></publication-list>
-				<clinical-index-list  (select)="openEditor($event)" (add)="openEditor({ type: 'ClinicalIndex'  })"></clinical-index-list>
-				<located-measure-list (select)="openEditor($event)" (add)="openEditor({ type: 'LocatedMeasure' })"></located-measure-list>
-				<lyph-template-list   (select)="openEditor($event)" (add)="openEditor({ type: 'LyphTemplate'   })"></lyph-template-list>
-				<correlation-list     (select)="openEditor($event)" (add)="openEditor({ type: 'Correlation'    })"></correlation-list>
+				<publication-list     (choose)="choose($event,   cList)" (add)="add('Publication'   )"></publication-list>
+				<clinical-index-list  (choose)="choose($event,   cList)" (add)="add('ClinicalIndex' )"></clinical-index-list>
+				<located-measure-list (choose)="choose($event,   cList)" (add)="add('LocatedMeasure')"></located-measure-list>
+				<lyph-template-list   (choose)="choose($event,   cList)" (add)="add('LyphTemplate'  )"></lyph-template-list>
+				<correlation-list     (choose)="choose($event)" #cList   (add)="add('Correlation'   )"></correlation-list>
 
 				<resource-editor
 					(close) = " closeEditor() "
@@ -138,8 +138,17 @@ await new Promise((resolve, reject) => {
 				this.selectedModel = null;
 				bottomCenterPanel.data('container').setSize(undefined, 1);
 			}
-			openEditor(model) {
-				this.selectedModel = model;
+			choose({event, model}, cList) {
+				if (event.type !== 'click') { return }
+				if (!event.ctrlKey) {
+					this.selectedModel = model;
+					bottomCenterPanel.data('container').setSize(undefined, 300);
+				} else if (event.ctrlKey && cList) {
+					cList.filterByModel(model);
+				}
+			}
+			add(type) {
+				this.selectedModel = { type };
 				bottomCenterPanel.data('container').setSize(undefined, 300);
 			}
 		}

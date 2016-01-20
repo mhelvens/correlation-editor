@@ -9,7 +9,7 @@ import {Resources}              from '../util/resources.es6.js';
 @Component({
 	selector: 'lyph-template-badge',
 	inputs:   ['modelId', 'highlight'],
-	events:   ['select', 'dragging'],
+	events:   ['choose', 'dragging'],
 	pipes: [
 		UnderlineSubstringPipe,
 		EscapeHtmlPipe
@@ -18,7 +18,7 @@ import {Resources}              from '../util/resources.es6.js';
 		'[class.resource-badge]':  ' true                                                   ',
 		'[title]':                 ' model.name                                             ',
 		'[innerHtml]':            ' model.name | escapeHTML | underlineSubstring:highlight ',
-		'(click)':                 ` select.next(model); $event.stopPropagation();          `,
+		'(click)':                 ` choose.next({event: $event, model: model}); $event.stopPropagation();          `,
 		...DragDropService.canBeDragged('dds')
 	},
 	template: ``,
@@ -31,7 +31,7 @@ export class LyphTemplateBadge extends ModelRepresentation {
 
 	static endpoint = 'lyphTemplates';
 
-	select   = new EventEmitter;
+	choose   = new EventEmitter;
 	dragging = new EventEmitter;
 
 	constructor(dd: DragDropService, resources: Resources) {

@@ -10,16 +10,16 @@ import {Resources}              from '../util/resources.es6.js';
 @Component({
 	selector: 'publication-badge',
 	inputs:   ['modelId', 'highlight'],
-	events:   ['select', 'dragging'],
+	events:   ['choose', 'dragging'],
 	pipes: [
 		UnderlineSubstringPipe,
 		EscapeHtmlPipe
 	],
 	host: {
 		'[class.resource-badge]':  `  true                                                                  `,
-		'[title]':                 `  model.title || model.uri                                              `,
-		'[innerHtml]':            ` (model.title || model.uri) | escapeHTML | underlineSubstring:highlight `,
-		'(click)':                 ` select.next(model); $event.stopPropagation();                          `,
+		'[title]':                 `  compositeTitle                                             `,
+		'[innerHtml]':             ` compositeTitle | escapeHTML | underlineSubstring:highlight `,
+		'(click)':                 ` choose.next({event: $event, model: model}); $event.stopPropagation();                          `,
 		...DragDropService.canBeDragged('dds')
 	},
 	template: ``,
@@ -32,7 +32,7 @@ export class PublicationBadge extends ModelRepresentation {
 
 	static endpoint = 'publications';
 
-	select   = new EventEmitter;
+	choose   = new EventEmitter;
 	dragging = new EventEmitter;
 
 	constructor(dd: DragDropService, resources: Resources) {
@@ -43,6 +43,17 @@ export class PublicationBadge extends ModelRepresentation {
 			dragstart() { this.dragging.next(this.model); return false; },
 			dragend()   { this.dragging.next(null);       return false; }
 		});
+	}
+
+	get compositeTitle() {
+		if (!this.model)       { return "" }
+		if (!this.model.title) { return this.model.uri }
+
+		/* extract pubmed-id if applicable */
+		let match = this.model.uri.match(/^https?\:\/\/www\.ncbi\.nlm\.nih\.gov\/pubmed\/\?term\=(\w+)/);
+		if (match) { return `${this.model.title} (${match[1]})` }
+
+		return this.model.title;
 	}
 
 }

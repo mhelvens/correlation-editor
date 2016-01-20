@@ -9,11 +9,11 @@ import {Resources}              from '../util/resources.es6.js';
 @Component({
 	selector: 'located-measure-badge',
 	inputs:   ['modelId', 'highlight'],
-	events:   ['select', 'dragging'],
+	events:   ['choose', 'dragging'],
 	host: {
 		'[class.resource-badge]':  `  true                                             `,
 		'[title]':                 ` model.quality + ' of ' + lyphTemplateModel().name `,
-		'(click)':                 ` select.next(model); $event.stopPropagation();     `,
+		'(click)':                 ` choose.next({event: $event, model: model}); $event.stopPropagation();     `,
 		...DragDropService.canBeDragged('dds')
 	},
 	pipes: [
@@ -36,7 +36,7 @@ export class LocatedMeasureBadge extends ModelRepresentation {
 
 	static endpoint = 'locatedMeasures';
 
-	select   = new EventEmitter;
+	choose   = new EventEmitter;
 	dragging = new EventEmitter;
 
 	constructor(dd: DragDropService, resources: Resources) {

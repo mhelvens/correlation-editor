@@ -1,4 +1,4 @@
-import {Component, EventEmitter, ChangeDetectorRef} from 'angular2/core';
+import {Component, EventEmitter, ChangeDetectorRef, ElementRef} from 'angular2/core';
 import $             from 'jquery';
 import scrollbarSize from 'scrollbar-size';
 
@@ -11,7 +11,7 @@ import {GlyphIcon}                                       from '../util/glyph-ico
 
 @Component({
 	selector: 'correlation-list',
-	events: ['select', 'add'],
+	events: ['choose', 'add'],
 	directives: [
 		CorrelationView,
 		DeleteTarget,
@@ -32,13 +32,13 @@ import {GlyphIcon}                                       from '../util/glyph-ico
 			<div class="form-group has-feedback">
 				<input
 					type        = "text"
-					class       = "form-control"
+					class       = "form-control filter-textbox"
 					style       = "border-radius: 0"
 					placeholder = "Filter Correlations"
 					[disabled]  = "!hasFilters()"
 					(input)     = "filter = $event.target.value"
 					(paste)     = "filter = $event.target.value">
-				<glyph-icon glyph="filter" class="form-control-feedback" color="gray"></glyph-icon>
+				<span class="form-control-feedback" style="font-size: 10px; color: gray; width: auto; margin-right: 8px;">{{(allResources['correlations'] | fieldSubstring : filterText : (hasFilters()?filter:'') : filterFlags).length}} / {{allResources['correlations'].length}}</span>
 			</div>
 			<span class="input-group-btn" data-toggle="buttons">
 				<label class="btn btn-default" [class.active]="filterFlags.byPublication" style="height: 34px" title="Filter by Publication">
@@ -68,7 +68,7 @@ import {GlyphIcon}                                       from '../util/glyph-ico
 				[modelId]            = " model.id                                                                                "
 				[highlight]           = " filter                                                                                  "
 				[style.margin-bottom] = " '14px'                                                                                  "
-				(select)              = " select.next($event)                                                                     "
+				(choose)              = " choose.next($event)                                                                     "
 				(dragging)            = " showTrashcan = !!$event                                                                 ">
 	        </correlation-view>
 		</div>
@@ -87,11 +87,12 @@ import {GlyphIcon}                                       from '../util/glyph-ico
 })
 export class CorrelationList {
 
-	select = new EventEmitter;
+	choose = new EventEmitter;
 	add    = new EventEmitter;
 
-	constructor(ref: ChangeDetectorRef, resources: Resources) {
+	constructor({nativeElement}: ElementRef, ref: ChangeDetectorRef, resources: Resources) {
 		this.resources = resources;
+		this.nativeElement = nativeElement;
 		this.allResources = resources.getAllResources_sync();
 		this.models = resources.getAllResources_sync()['correlations'];
 		this.filterFlags = {
@@ -132,13 +133,49 @@ export class CorrelationList {
 	filterText(model, flags) {
 		return [
 			(flags.byComment     ? model.comment                                                            : ""),
-			(flags.byPublication ? this.resources.getResource_sync('publications', model.publication).title : ""),
+			(flags.byPublication ? this.publicationFilterText(this.resources.getResource_sync('publications', model.publication)) : ""),
 			...(flags.byClinicalIndices ? this.resources.getResource_sync('clinicalIndices', model.clinicalIndices).map(ci=>ci.title||'') : ""),
 			...(flags.byLocatedMeasures ? this.resources.getResource_sync('locatedMeasures', model.locatedMeasures).map(lm=>lm.quality + ' of ' + (() => {
 				let lt = this.resources.getResource_sync('lyphTemplates', lm.lyphTemplate);
 				return lt ? lt.name : '';
 			})()) : "")
 		].join('   ');
+	}
+
+	filterByModel(model) {
+		switch (model.type) {
+			case 'Publication': {
+				this.filterFlags.byPublication = true;
+				this.filter = this.publicationFilterText(model);
+			} break;
+			case 'ClinicalIndex': {
+				this.filterFlags.byClinicalIndices = true;
+				this.filter = model.title || '';
+			} break;
+			case 'LocatedMeasure': {
+				this.filterFlags.byLocatedMeasures = true;
+				this.filter = model.quality + ' of ' + (() => {
+						let lt = this.resources.getResource_sync('lyphTemplates', model.lyphTemplate);
+						return lt ? lt.name : '';
+					})();
+			} break;
+			case 'LyphTemplate': {
+				this.filterFlags.byLocatedMeasures = true; // byLocatedMeasures is correct here
+				this.filter = model.name || '';
+			} break;
+		}
+		$(this.nativeElement).find('.filter-textbox').val(this.filter);
+	}
+
+	publicationFilterText(model) {
+		if (!model)       { return "" }
+		if (!model.title) { return model.uri }
+
+		/* extract pubmed-id if applicable */
+		let match = model.uri.match(/^https?\:\/\/www\.ncbi\.nlm\.nih\.gov\/pubmed\/\?term\=(\w+)/);
+		if (match) { return `${model.title} (${match[1]})` }
+
+		return model.title;
 	}
 
 }
