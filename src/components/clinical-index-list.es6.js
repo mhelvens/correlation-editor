@@ -4,10 +4,10 @@ import scrollbarSize from 'scrollbar-size';
 
 import {ClinicalIndexView} from './clinical-index-view.es6.js';
 
-import {Resources, request}           from '../util/resources.es6.js';
-import {DeleteTarget}                  from '../util/delete-target.es6.js';
-import {FieldSubstringPipe}            from '../util/substring-pipe.es6.js';
-import {GlyphIcon}                     from '../util/glyph-icon.es6.js';
+import {Resources, request} from '../util/resources.es6.js';
+import {DeleteTarget}       from '../util/delete-target.es6.js';
+import {FieldSubstringPipe} from '../util/substring-pipe.es6.js';
+import {GlyphIcon}          from '../util/glyph-icon.es6.js';
 
 @Component({
 	selector: 'clinical-index-list',
@@ -45,12 +45,12 @@ import {GlyphIcon}                     from '../util/glyph-icon.es6.js';
 			<div style="visibility: hidden; height: 34px"></div>
 
 			<clinical-index-view
-				*ngFor     = " #model of allResources['clinicalIndices'] | fieldSubstring:filterText:filter "
-			     class      = " list-group-item                                     "
-			    [modelId]  = " model.id                                            "
-			    [highlight] = " filter                                              "
-			    (choose)    = " choose.next($event)                                 "
-			    (dragging)  = " showTrashcan = !!$event                             ">
+				*ngFor      = " #model of allResources['clinicalIndices'] | fieldSubstring:filterText:filter "
+			     class      = " list-group-item         "
+			    [modelId]   = " model.id                "
+			    [highlight] = " filter                  "
+			    (choose)    = " choose.next($event)     "
+			    (dragging)  = " showTrashcan = !!$event ">
 	        </clinical-index-view>
 
 			<div style="visibility: hidden; height: 34px"></div>
@@ -58,7 +58,7 @@ import {GlyphIcon}                     from '../util/glyph-icon.es6.js';
 			<button type="button" class="btn btn-default"
 			        style="position: absolute; bottom: -1px; left: 1px; border-radius: 0;"
 			        [style.width] = " 'calc(100% - '+scrollbarSize+'px)' "
-			        (click)       = " add.next() ">
+			        (click)       = " add.next()                         ">
 				<span class="glyphicon glyphicon-plus"></span> Add new Clinical Index
 			</button>
 		</div>
@@ -74,7 +74,7 @@ export class ClinicalIndexList {
 	constructor(resources: Resources) {
 		this.resources = resources;
 		this.allResources = resources.getAllResources_sync();
-		this.models = resources.getAllResources_sync()['clinicalIndices'];
+		this.models = resources.getAllResources_sync()['clinicalIndices']; // TODO: remove line?
 		this.scrollbarSize = scrollbarSize();
 		this.showTrashcan = false;
 	}

@@ -13,7 +13,7 @@ import {ClinicalIndexBadge}   from '../components/clinical-index-badge.es6.js';
 import {LyphTemplateBadge}    from '../components/lyph-template-badge.es6.js';
 
 import {DragDropService}           from '../util/drag-drop-service.es6.js';
-import {Resources}           from '../util/resources.es6.js';
+import {Resources}                 from '../util/resources.es6.js';
 import {UnderlineSubstringPipe}    from '../util/underline-substring-pipe.es6.js';
 import {EscapeHtmlPipe}            from '../util/escape-html-pipe.es6.js';
 import {DeleteTarget}              from '../util/delete-target.es6.js';

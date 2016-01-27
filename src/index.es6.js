@@ -9,14 +9,15 @@ import scrollbarSize from 'scrollbar-size';
 import GoldenLayout  from './libs/golden-layout.es6.js';
 import                    './libs/bootstrap.es6.js';
 
-import {Resources}           from './util/resources.es6.js';
-import {PublicationList}     from './components/publication-list.es6.js';
-import {ClinicalIndexList}   from './components/clinical-index-list.es6.js';
-import {LocatedMeasureList}  from './components/located-measure-list.es6.js';
-import {LyphTemplateList}    from './components/lyph-template-list.es6.js';
-import {CorrelationList}     from './components/correlation-list.es6.js';
-import {ResourceEditor}      from './util/resource-editor.es6.js';
-import {DragDropService}     from './util/drag-drop-service.es6.js';
+import {Resources}                     from './util/resources.es6.js';
+import {PublicationList}               from './components/publication-list.es6.js';
+import {ClinicalIndexList}             from './components/clinical-index-list.es6.js';
+import {ClinicalIndexHierarchicalList} from './components/clinical-index-hierarchical-list.es6.js';
+import {LocatedMeasureList}            from './components/located-measure-list.es6.js';
+import {LyphTemplateList}              from './components/lyph-template-list.es6.js';
+import {CorrelationList}               from './components/correlation-list.es6.js';
+import {ResourceEditor}                from './util/resource-editor.es6.js';
+import {DragDropService}               from './util/drag-drop-service.es6.js';
 
 import './index.scss';
 
@@ -108,7 +109,8 @@ await new Promise((resolve, reject) => {
 			selector: 'app',
 			directives: [
 				PublicationList,
-				ClinicalIndexList,
+				//ClinicalIndexList,
+				ClinicalIndexHierarchicalList,
 				LocatedMeasureList,
 				LyphTemplateList,
 				CorrelationList,
@@ -116,11 +118,11 @@ await new Promise((resolve, reject) => {
 			],
 			template: `
 
-				<publication-list     (choose)="choose($event,   cList)" (add)="add('Publication'   )"></publication-list>
-				<clinical-index-list  (choose)="choose($event,   cList)" (add)="add('ClinicalIndex' )"></clinical-index-list>
-				<located-measure-list (choose)="choose($event,   cList)" (add)="add('LocatedMeasure')"></located-measure-list>
-				<lyph-template-list   (choose)="choose($event,   cList)" (add)="add('LyphTemplate'  )"></lyph-template-list>
-				<correlation-list     (choose)="choose($event)" #cList   (add)="add('Correlation'   )"></correlation-list>
+				<publication-list                 (choose)="choose($event,   cList)" (add)="add('Publication'   )"></publication-list>
+				<clinical-index-hierarchical-list (choose)="choose($event,   cList)" (add)="add('ClinicalIndex' )"></clinical-index-hierarchical-list>
+				<located-measure-list             (choose)="choose($event,   cList)" (add)="add('LocatedMeasure')"></located-measure-list>
+				<lyph-template-list               (choose)="choose($event,   cList)" (add)="add('LyphTemplate'  )"></lyph-template-list>
+				<correlation-list                 (choose)="choose($event)" #cList   (add)="add('Correlation'   )"></correlation-list>
 
 				<resource-editor
 					(close) = " closeEditor() "
@@ -165,12 +167,12 @@ await new Promise((resolve, reject) => {
 
 
 /* populating the panels */
-$('publication-list')    .detach().appendTo(topLeftPanel     );
-$('clinical-index-list') .detach().appendTo(bottomLeftPanel  );
-$('located-measure-list').detach().appendTo(topRightPanel    );
-$('lyph-template-list')  .detach().appendTo(bottomRightPanel );
-$('correlation-list')    .detach().appendTo(centerPanel      );
-$('resource-editor')     .detach().appendTo(bottomCenterPanel);
+$('app > publication-list')                .detach().appendTo(topLeftPanel     );
+$('app > clinical-index-hierarchical-list').detach().appendTo(bottomLeftPanel  );
+$('app > located-measure-list')            .detach().appendTo(topRightPanel    );
+$('app > lyph-template-list')              .detach().appendTo(bottomRightPanel );
+$('app > correlation-list')                .detach().appendTo(centerPanel      );
+$('app > resource-editor')                 .detach().appendTo(bottomCenterPanel);
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
