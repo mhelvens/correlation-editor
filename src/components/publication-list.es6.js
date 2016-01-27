@@ -57,7 +57,7 @@ import {PublicationView} from './publication-view.es6.js';
 			        style="position: absolute; bottom: -1px; left: 1px; border-radius: 0;"
 			        [style.width] = " 'calc(100% - '+scrollbarSize+'px)' "
 			        (click)       = " add.next() ">
-				<span class="glyphicon glyphicon-plus"></span> Add new Lyph Template
+				<span class="glyphicon glyphicon-plus"></span> Add new Publication
 			</button>
 		</div>
 
