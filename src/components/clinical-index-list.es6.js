@@ -74,7 +74,7 @@ export class ClinicalIndexList {
 	constructor(resources: Resources) {
 		this.resources = resources;
 		this.allResources = resources.getAllResources_sync();
-		this.models = resources.getAllResources_sync()['clinicalIndices']; // TODO: remove line?
+		//this.models = resources.getAllResources_sync()['clinicalIndices']; // TODO: remove line?
 		this.scrollbarSize = scrollbarSize();
 		this.showTrashcan = false;
 	}

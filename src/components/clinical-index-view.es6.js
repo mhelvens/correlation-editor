@@ -36,6 +36,10 @@ import {Resources}              from '../util/resources.es6.js';
 		:host       { background-color: #ffe !important }
 		:host:hover { background-color: #ffc !important }
 
+		:host > div {
+			pointer-events: none;
+		}
+
 	`]
 })
 export class ClinicalIndexView extends ModelRepresentation {

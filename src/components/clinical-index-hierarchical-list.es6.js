@@ -9,6 +9,7 @@ import {UnderlineSubstringPipe} from '../util/underline-substring-pipe.es6.js';
 import {FieldSubstringPipe}     from '../util/substring-pipe.es6.js';
 import {EscapeHtmlPipe}         from '../util/escape-html-pipe.es6.js';
 import {FilterPipe}             from '../util/filter-pipe.es6.js';
+import {MapPipe}                from '../util/map-pipe.es6.js';
 import {Resources, request}     from '../util/resources.es6.js';
 import {DeleteTarget}           from '../util/delete-target.es6.js';
 
@@ -25,7 +26,8 @@ const INDENT = 16;
 		UnderlineSubstringPipe,
 		EscapeHtmlPipe,
 		FieldSubstringPipe,
-		FilterPipe
+		FilterPipe,
+		MapPipe
 	],
 	inputs: ['modelId', 'highlight', 'parentId'],
 	events: ['choose', 'add', 'dragging'],
@@ -35,18 +37,19 @@ const INDENT = 16;
 	template: `
 
 		<template [ngIf]="modelId">
-			<div class="subtree-container">
+			<div *ngIf="parentId || model.parents.length === 0" class="subtree-container">
 				<div *ngIf   = " model.parents.length > 0  "
 				      class  = " unlink-from-parent-button "
 				     (click) = " unlinkFromParent()        ">
 					<span class="glyphicon glyphicon-remove"></span>
 				</div>
 				<clinical-index-view
-					 style      = " margin-bottom: -1px   "
-				    [modelId]   = " modelId               "
-				    [highlight] = " highlight             "
-				    (dragging)  = " dragging.next($event) "
-				    (choose)    = " choose  .next($event) ">
+					 style          = " margin-bottom: -1px                    "
+				    [modelId]       = " modelId                                "
+				    [highlight]     = " highlight                              "
+				    [style.opacity] = " explicitlyHighlighted(model) ? 1 : 0.4 "
+				    (dragging)      = " dragging.next($event)                  "
+				    (choose)        = " choose  .next($event)                  ">
 				</clinical-index-view>
 				<div *ngIf   = " model.children.length > 0    "
 				      class  = " plus-minus-button            "
@@ -56,9 +59,9 @@ const INDENT = 16;
 				<div *ngIf="!hideChildren" [style.margin-left.px]=" ${INDENT} ">
 					<div *ngIf="draggingToInsert" class="insert-point"></div>
 					<clinical-index-hierarchical-list
-						*ngFor      = " #childId of model.children "
-						[parentId]  = " modelId                    "
-						[modelId]   = " childId                    "
+						*ngFor      = " #child of model.children | map:resolveModel | filter:highlighted:highlight "
+						[parentId]  = " model.id                   "
+						[modelId]   = " child.id                   "
 				        [highlight] = " highlight                  "
 						(dragging)  = " dragging.next($event)      "
 						(choose)    = " choose  .next($event)      ">
@@ -86,13 +89,13 @@ const INDENT = 16;
 				        placeholder = "Filter Clinical Indices"
 						(input)     = "highlight = $event.target.value"
 						(paste)     = "highlight = $event.target.value">
-					<span class="form-control-feedback" style="font-size: 10px; color: gray; width: auto; margin-right: 8px;">{{(allResources['clinicalIndices'] | fieldSubstring:filterText:filter).length}} / {{allResources['clinicalIndices'].length}}</span>
+					<span class="form-control-feedback" style="font-size: 10px; color: gray; width: auto; margin-right: 8px;">{{(allResources['clinicalIndices'] | fieldSubstring:filterText:highlight).length}} / {{allResources['clinicalIndices'].length}}</span>
 				</div>
 
 				<div style="visibility: hidden; height: 34px"></div>
 
 				<clinical-index-hierarchical-list
-					*ngFor      = " #model of allResources['clinicalIndices'] | filter:noParents | fieldSubstring:filterText:highlight "
+					*ngFor      = " #model of allResources['clinicalIndices'] | filter:highlighted:highlight "
 					[modelId]   = " model.id                "
 			        [highlight] = " highlight               "
 			        (choose)    = " choose.next($event)     "
@@ -196,13 +199,15 @@ export class ClinicalIndexHierarchicalList extends ModelRepresentation {
 	constructor(dd: DragDropService, resources: Resources) {
 		super({resources});
 		this.allResources = resources.getAllResources_sync();
-		this.models = resources.getAllResources_sync()['clinicalIndices']; // TODO: remove line?
 		this.scrollbarSize = scrollbarSize();
 		this.showTrashcan = false;
+		this.resolveModel = this.resolveModel.bind(this);
+		this.highlighted = this.highlighted.bind(this);
+		this.explicitlyHighlighted = this.explicitlyHighlighted.bind(this);
 		this.ddr = dd.recipient(this, {
 			acceptedTypes: ['clinicalindex'],
 			dropEffect: 'link',
-			dragover()  { this.draggingToInsert = true;  return false; },
+			dragover: false,
 			dragenter() { this.draggingToInsert = true;  return false; },
 			dragleave() { this.draggingToInsert = false; return false; },
 			drop(resource) {
@@ -225,7 +230,22 @@ export class ClinicalIndexHierarchicalList extends ModelRepresentation {
 
 	filterText(model) { return model.title }
 
+	resolveModel(modelId) { return this.resources.getResource_sync('clinicalIndices', modelId) }
+
 	noParents(model) { return !model.parents || model.parents.length === 0 }
+
+	highlighted(model, highlight) {
+		if (this.explicitlyHighlighted(model)) { return true }
+		for (let childId of model.children) {
+			let child = this.resources.getResource_sync('clinicalIndices', childId);
+			if (this.highlighted(child)) { return true }
+		}
+		return false;
+	}
+
+	explicitlyHighlighted(model, highlight) {
+		return (model.title || "").toLowerCase().includes((this.highlight || "").trim().toLowerCase());
+	}
 
 	unlinkFromParent() {
 		(async () => {
