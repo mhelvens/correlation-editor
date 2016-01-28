@@ -213,15 +213,29 @@ export class ClinicalIndexHierarchicalList extends ModelRepresentation {
 			drop(resource) {
 				(async () => {
 					try {
+						/* check for cycle */
+						const pathExists = (from, to) => {
+							if (from === to) { return true }
+							for (let fromChildId of from.children) {
+								let fromChild = this.resources.getResource_sync('clinicalIndices', fromChildId);
+								if (pathExists(fromChild, to)) { return true }
+							}
+							return false;
+						};
+						if (pathExists(resource, this.model)) {
+							console.log(`Making ${resource.id} a child of ${this.model.id} would create a cycle.`);
+							return;
+						}
+
+						/* create the new link */
 						await request.put(`/clinicalIndices/${this.model.id}/children/${resource.id}`);
 						this.model.children = [...new Set([...this.model.children, resource.id  ])];
 						resource.parents    = [...new Set([...resource.parents,    this.model.id])];
 					} catch (err) {
 						console.error(err);
-					}
-					setTimeout(() => {
+					} finally {
 						this.draggingToInsert = false;
-					});
+					}
 				})();
 				return false;
 			}
