@@ -90,28 +90,32 @@ export class CorrelationList {
 	choose = new EventEmitter;
 	add    = new EventEmitter;
 
-	constructor({nativeElement}: ElementRef, ref: ChangeDetectorRef, resources: Resources) {
+	constructor({nativeElement}: ElementRef, changeDetectorRef: ChangeDetectorRef, resources: Resources) {
 		this.resources = resources;
 		this.nativeElement = nativeElement;
+		this.changeDetectorRef = changeDetectorRef;
 		this.allResources = resources.getAllResources_sync();
 		this.models = resources.getAllResources_sync()['correlations'];
 		this.filterFlags = {
 			byPublication:     true,
-			byClinicalIndices: false,
-			byLocatedMeasures: false,
+			byClinicalIndices: true,
+			byLocatedMeasures: true,
 			byComment:         false
 		};
+		this.scrollbarSize = scrollbarSize();
+		this.showTrashcan = false;
+		this.filterText = this.filterText.bind(this);
+	}
+
+	ngOnInit() {
 		// Can't get [(ngModel)] to work for checkboxes that look like buttons.
 		// So we're using jquery change detection and have to manually trigger change detection.
 		for (let flag of Object.keys(this.filterFlags)) {
 			$(`[name="${flag}"]`).change(({target:{checked}}) => {
 				this.filterFlags = { ...this.filterFlags, [flag]: checked };
-				ref.detectChanges();
+				this.changeDetectorRef.detectChanges();
 			});
 		}
-		this.scrollbarSize = scrollbarSize();
-		this.showTrashcan = false;
-		this.filterText = this.filterText.bind(this);
 	}
 
 	hasFilters() {
