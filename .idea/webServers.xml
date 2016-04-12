@@ -2,11 +2,12 @@
 <project version="4">
   <component name="WebServers">
     <option name="servers">
-      <webServer id="108456b6-4fb9-49ee-8a38-fdb642835831" name="Linode (correlation-editor)" url="http://localhost:8888">
+      <webServer id="d6672a22-fbd0-4060-b225-c539c6925280" name="Linode (correlation-editor) (project level)" url="http://localhost:8888">
         <fileTransfer host="178.79.140.159" port="22" rootFolder="/home/correlation-editor" accessType="SFTP" password="dfc7dfc2dfc7dfc2df9bdf99" username="correlation-editor">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" />
           </advancedOptions>
+          <option name="port" value="22" />
         </fileTransfer>
       </webServer>
     </option>

@@ -142,11 +142,15 @@ await new Promise((resolve, reject) => {
 			}
 			choose({event, model}, cList) {
 				if (event.type !== 'click') { return }
-				if (!event.ctrlKey) {
+				if (!event.shiftKey && !event.ctrlKey) {
 					this.selectedModel = model;
 					bottomCenterPanel.data('container').setSize(undefined, 300);
 				} else if (event.ctrlKey && cList) {
 					cList.filterByModel(model);
+				} else if (event.shiftKey) {
+					if (/^https?\:\/\//.test(model ? model.uri : '')) {
+						window.open(model.uri, '_blank');
+					}
 				}
 			}
 			add(type) {
