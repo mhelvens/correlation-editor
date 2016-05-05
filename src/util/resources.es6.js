@@ -2,7 +2,7 @@ import superAgent from '../libs/superagent.es6.js';
 export const request = superAgent;
 import {sw} from '../util/misc.es6.js';
 
-request.basePath = 'http://open-physiology.org:8887';
+request.basePath = 'http://open-physiology.org:8889';
 
 const fetchResources = Symbol('fetchResources');
 const models         = Symbol('models');
