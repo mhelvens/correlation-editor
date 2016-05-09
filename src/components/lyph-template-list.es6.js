@@ -87,6 +87,6 @@ export class LyphTemplateList {
 		}
 	}
 
-	filterText(model) { return model.name }
+	filterText(model) { return model.id + '    ' + model.name }
 
 }

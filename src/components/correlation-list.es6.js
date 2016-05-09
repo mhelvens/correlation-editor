@@ -136,9 +136,10 @@ export class CorrelationList {
 
 	filterText(model, flags) {
 		return [
-			(flags.byComment     ? model.comment                                                            : ""),
-			(flags.byPublication ? this.publicationFilterText(this.resources.getResource_sync('publications', model.publication)) : ""),
-			...(flags.byClinicalIndices ? this.resources.getResource_sync('clinicalIndices', model.clinicalIndices).map(ci=>ci.title||'') : ""),
+			model.id                                                                                                                                     ,
+			(flags.byComment     ? model.comment                                                            : "")                                        ,
+			(flags.byPublication ? this.publicationFilterText(this.resources.getResource_sync('publications', model.publication)) : "")                  ,
+			...(flags.byClinicalIndices ? this.resources.getResource_sync('clinicalIndices', model.clinicalIndices).map(ci=>ci.title||'') : "")          ,
 			...(flags.byLocatedMeasures ? this.resources.getResource_sync('locatedMeasures', model.locatedMeasures).map(lm=>lm.quality + ' of ' + (() => {
 				let lt = this.resources.getResource_sync('lyphTemplates', lm.lyphTemplate);
 				return lt ? lt.name : '';

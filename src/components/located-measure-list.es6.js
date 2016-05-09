@@ -106,7 +106,7 @@ export class LocatedMeasureList {
 	}
 
 	filterText(model, flags) {
-		return [
+		return model.id + '    ' + [
 			(model.quality),
 			(flags.byLyphTemplate ? this.resources.getResource_sync('lyphTemplates', model.lyphTemplate).name : "")
 		].join(' of ');

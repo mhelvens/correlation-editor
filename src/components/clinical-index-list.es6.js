@@ -88,6 +88,6 @@ export class ClinicalIndexList {
 		}
 	}
 
-	filterText(model) { return model.title }
+	filterText(model) { return model.id + '    ' + model.title }
 
 }

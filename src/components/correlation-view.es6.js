@@ -5,10 +5,10 @@ import {LocatedMeasureBadge} from './located-measure-badge.es6.js';
 import {PublicationBadge}    from './publication-badge.es6.js';
 import {ClinicalIndexBadge}  from './clinical-index-badge.es6.js';
 
-import {DragDropService}           from '../util/drag-drop-service.es6.js';
-import {Resources, request}           from '../util/resources.es6.js';
-import {UnderlineSubstringPipe}    from '../util/underline-substring-pipe.es6.js';
-import {EscapeHtmlPipe}            from '../util/escape-html-pipe.es6.js';
+import {DragDropService}        from '../util/drag-drop-service.es6.js';
+import {Resources, request}     from '../util/resources.es6.js';
+import {UnderlineSubstringPipe} from '../util/underline-substring-pipe.es6.js';
+import {EscapeHtmlPipe}         from '../util/escape-html-pipe.es6.js';
 
 @Component({
 	selector: 'correlation-view',
@@ -38,6 +38,7 @@ import {EscapeHtmlPipe}            from '../util/escape-html-pipe.es6.js';
 				<div (click)="choose.next({event: $event, model: model})" (mouseover)="hovering = true" (mouseout)="hovering = false" style="flex-grow: 1">
 					<span class="icon icon-Correlation" style="margin-right: 0"></span>&nbsp;
 					Correlation
+					(<span class="text-content" [innerHtml]="model.id.toString() | escapeHTML | underlineSubstring:highlight"></span>)
 				</div>
 				<a data-toggle="collapse" href="#collapse-{{ model.id }}" class="collapsed" style="display: block; text-decoration: none; cursor: pointer; flex-grow: 0">
 					<span *ngIf="model.comment" class="comment-indicator">
@@ -53,22 +54,22 @@ import {EscapeHtmlPipe}            from '../util/escape-html-pipe.es6.js';
 		</div>
 		<div class="panel-footer" [class.no-comment]="!model.comment">
 			<publication-badge
-				*ngIf      = " model.publication     "
-				[modelId]  = " model.publication     "
+				*ngIf       = " model.publication     "
+				[modelId]   = " model.publication     "
 				[highlight] = " highlight             "
 				(choose)    = " choose.next($event)   "
 				(dragging)  = " dragging.next($event) ">
 			</publication-badge><!--
 			--><clinical-index-badge
-				*ngFor     = " #id of model.clinicalIndices "
-				[modelId]  = " id                           "
+				*ngFor      = " #id of model.clinicalIndices "
+				[modelId]   = " id                           "
 				[highlight] = " highlight                    "
 				(choose)    = " choose.next($event)          "
 				(dragging)  = " dragging.next($event)        ">
 			</clinical-index-badge><!--
 			--><located-measure-badge
-				*ngFor     = " #id of model.locatedMeasures "
-				[modelId]  = " id                           "
+				*ngFor      = " #id of model.locatedMeasures "
+				[modelId]   = " id                           "
 				[highlight] = " highlight                    "
 				(choose)    = " choose.next($event)          "
 				(dragging)  = " dragging.next($event)        ">
@@ -122,9 +123,10 @@ export class CorrelationView extends ModelRepresentation {
 	choose   = new EventEmitter;
 	dragging = new EventEmitter;
 
+	hovering = false;
+
 	constructor(dd: DragDropService, resources: Resources) {
 		super({resources});
-		this.hovering = false;
 		this.dds = dd.sender(this, {
 			resourceKey:   'model',
 			effectAllowed: 'link',

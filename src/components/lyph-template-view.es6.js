@@ -16,15 +16,18 @@ import {Resources}              from '../util/resources.es6.js';
 	inputs: ['modelId', 'highlight'],
 	events: ['choose', 'dragging'],
 	host: {
-		'[class.resource-view]': ` true               `,
-		'[title]':               ` model.name         `,
+		'[class.resource-view]': ` true                                       `,
+		'[title]':               ` model.name + '(' + model.id + ')'          `,
 		'(click)':               ` choose.next({event: $event, model: model}) `,
 		...DragDropService.canBeDragged('dds')
 	},
 	template: `
 
 		<div class="icon icon-LyphTemplate"></div>
-		<div class="text-content" [innerHtml]="model.name | escapeHTML | underlineSubstring:highlight"></div>
+		<div class="text-content">
+			<span [innerHtml]="model.name | escapeHTML | underlineSubstring:highlight"></span>
+			(<span [innerHtml]="model.id.toString() | escapeHTML | underlineSubstring:highlight"></span>)
+		</div>
 
 	`,
 	styles: [`

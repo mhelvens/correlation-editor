@@ -242,7 +242,7 @@ export class ClinicalIndexHierarchicalList extends ModelRepresentation {
 		});
 	}
 
-	filterText(model) { return model.title }
+	filterText(model) { return model.id + '    ' + model.title }
 
 	resolveModel(modelId) { return this.resources.getResource_sync('clinicalIndices', modelId) }
 
@@ -258,7 +258,7 @@ export class ClinicalIndexHierarchicalList extends ModelRepresentation {
 	}
 
 	explicitlyHighlighted(model, highlight) {
-		return (model.title || "").toLowerCase().includes((this.highlight || "").trim().toLowerCase());
+		return (model.id + '    ' + (model.title || "")).toLowerCase().includes((this.highlight || "").trim().toLowerCase());
 	}
 
 	unlinkFromParent() {

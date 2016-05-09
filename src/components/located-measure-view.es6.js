@@ -34,11 +34,12 @@ import {Resources, request}           from '../util/resources.es6.js';
 			<span [innerHtml]="model.quality | escapeHTML | underlineSubstring:highlight"></span>
 			<b>of</b>
 			<lyph-template-badge
-				*ngIf      = " model.lyphTemplate  "
-				[modelId]  = " model.lyphTemplate  "
+				*ngIf       = " model.lyphTemplate  "
+				[modelId]   = " model.lyphTemplate  "
 				[highlight] = " highlight           "
 				(choose)    = " choose.next($event) ">
 			</lyph-template-badge>
+			(<span [innerHtml]="model.id.toString() | escapeHTML | underlineSubstring:highlight"></span>)
 		</div>
 
 	`,

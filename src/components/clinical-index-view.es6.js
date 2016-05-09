@@ -24,7 +24,10 @@ import {Resources}              from '../util/resources.es6.js';
 	template: `
 
 		<div class="icon icon-ClinicalIndex"></div>
-		<div class="text-content" [innerHtml]="(model.title || model.uri) | escapeHTML | underlineSubstring:highlight"></div>
+		<div class="text-content">
+			<span [innerHtml]="(model.title || model.uri) | escapeHTML | underlineSubstring:highlight"></span>
+			(<span [innerHtml]="model.id.toString() | escapeHTML | underlineSubstring:highlight"></span>)
+		</div>
 		<a *ngIf = "uriIsUrl()"
 		   class  = "link glyphicon glyphicon-new-window"
 		   [href] = "model.uri"

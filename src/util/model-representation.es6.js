@@ -1,6 +1,9 @@
 const model = Symbol('model');
 
 export class ModelRepresentation {
+
+	model;
+
 	constructor({resources}) {
 		this.resources = resources;
 	}
