@@ -22,6 +22,7 @@ export class Resources {
 			for (let model of this[modelLists][type]) {
 				this[models][type][model.id] = model;
 			}
+			this[modelLists][type].sort((a, b) => b.id - a.id); // reverse id order
 		}
 	}
 
@@ -68,7 +69,7 @@ export class Resources {
 		});
 		let newResource = (await request.post(`/${endpoint}`).send(resource)).body[0];
 		this[models][endpoint][newResource.id] = newResource;
-		this[modelLists][endpoint] = [...this[modelLists][endpoint], newResource];
+		this[modelLists][endpoint] = [newResource, ...this[modelLists][endpoint]];
 		return newResource;
 	}
 
